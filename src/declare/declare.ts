@@ -18,7 +18,7 @@ export const declare = <T extends DeclarationsInterface>(declarations: T) => {
         })
     );
 
-    const maxWorkers = WorkerPool.cpus;
+    const maxWorkers = () => WorkerPool.max;
 
     const activeWorkers = () => WorkerPool.active;
 
