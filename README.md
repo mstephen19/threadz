@@ -1,5 +1,7 @@
 # Threadz
 
+![ts](https://flat.badgen.net/badge/Built%20With/TypeScript/blue)
+
 Threadz is a multithreading library mainly for offloading expensive operations onto separate threads in order to boost performance. The goal here is to make multi-threading accessible; therefore, there is very little overhead when it comes to using this package. Here's what the overall workflow looks like:
 
 1. Declare your "worker" functions using the `declare` function.
@@ -22,6 +24,7 @@ In order for them to work with Threadz, the operations you'd like to run on sepa
 // threadz.ts
 import { declare } from 'threadz';
 
+// This MUST be the default export
 export default declare({
     // "add" is the name by which we'd like to
     // refer to the function when calling it
@@ -152,7 +155,7 @@ export default declare({
 });
 ```
 
-> It is recommended to use this function
+> It is recommended to use this function above your declarations export.
 
 Use this feature cautiously. Setting it too high could lead to issues.
 
