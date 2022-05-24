@@ -167,13 +167,138 @@ There are three properties on the `_threadz` API, which is returned by the `decl
 // Get the current number of currently active workers
 WORKERS._threadz.activeWorkers();
 
+// The maximum number of workers that can be run simultaneously
+WORKERS._threadz.maxWorkers();
+
 // A reference to your original declarations
 WORKERS._threadz.declarations;
-
-// The maximum number of workers that can be run simultaneously
-WORKERS._threadz.maxWorkers;
 ```
 
-## Future prospects
+## Shared memory
 
-In the future, this package will provide an API for easily sending messages back and forth between the main thread and the worker thread.
+With the `SharedMemory` API, you can easily share memory between multiple worker threads and the main thread. Simply import the class and instantiate a new one with some initial state:
+
+```TypeScript
+import { SharedMemory } from 'threadz';
+
+const memory = new SharedMemory<Record<string, unknown>>({ initialState: { foo: 'bar' } });
+```
+
+This shared memory has an predetermined and unchangeable size. You can also provide a `sizeMb` argument to define how large you'd like this to be (default is 1MB, which is generous).
+
+The data within the memory can be viewed or changed by using `memory.state`:
+
+```TypeScript
+const memory = new SharedMemory<Record<string, unknown>>({ initialState: { foo: 'bar' } });
+
+console.log(memory.state); // -> {"foo":"bar"}
+
+memory.state = { abc: 'def' };
+
+console.log(memory.state); // -> {"abc":"def"}
+```
+
+> The return value of `memory.state` will always be a string. Additionally, when setting a new state, ensure that it is larger than what it previously was in order to avoid parsing issues.
+
+You can also create a shared memory straight from a `Uint8Array` like so:
+
+```TypeScript
+const shared = new SharedArrayBuffer(1e6);
+
+const array = new Uint8Array(shared);
+
+const memory = SharedMemory.from(array);
+```
+
+This is useful when manually passing shared memory into a worker function.
+
+## Passing shared memory into a worker function
+
+First, we'll define a worker function which simply expects a `Uint8Array` as an argument:
+
+```TypeScript
+// workers.ts
+import { declare, SharedMemory } from 'threadz';
+
+export default declare({
+    foo: {
+        worker: async (shared: Uint8Array) => {
+            // Turn the Uint8Array into a SharedMemory object
+            console.log(SharedMemory.from(shared).state);
+        },
+    },
+});
+```
+
+Then, we'll just create a `SharedMemory` and pass its `Uint8Array` into our call of the worker:
+
+```TypeScript
+import { SharedMemory } from 'threadz';
+import WORKERS from './workers';
+
+(async () => {
+    const memory = new SharedMemory({ initialState: 'foo' });
+    await WORKERS.foo(memory.shared);
+})();
+```
+
+Here's what we see logged:
+
+```text
+"foo"
+```
+
+## `Interact`ing with a worker thread
+
+The main API returned by declare is great; however, it does not allow for communication between the main thread and the worker thread beyond parameter passing. For use-cases where further configuration and communication are required, you can use the `Interact` API.
+
+```TypeScript
+import { Interact } from 'threadz';
+import WORKERS from './workers';
+
+(async () => {
+    // You must ALWAYS call the `go()` method at the end
+    const worker = Interact.with(WORKERS.foo).go();
+
+    worker.on('success', () => console.log('hello world'));
+    worker.on('error', () => console.log('oops'));
+})();
+```
+
+Unlike the main API, this returns a `ThreadzWorker` on which events can be listened for rather than a promise. The two available events are `success` and `error`.
+
+You can also pass the memory into here like so:
+
+```TypeScript
+const memory = new SharedMemory({ initialState: { hey: 'guys!' } });
+
+const worker = Interact.with(WORKERS.foo).memory(memory).go();
+```
+
+### Sending messages
+
+Finally, you are able to listen for events by using the `Interact.prototype.onParentMessage` function and send messages with `worker.sendMessage()`:
+
+```TypeScript
+import { Interact, SharedMemory } from 'threadz';
+import WORKERS from './workers';
+
+(async () => {
+    const memory = new SharedMemory({ initialState: 'test' });
+
+    const worker = Interact.with(WORKERS.foo)
+        .memory(memory)
+        .onParentMessage<string>((memory, data) => (memory.state = data as string))
+        .go();
+
+    worker.sendMessage('hello world');
+
+    worker.on('success', () => {
+        console.log(memory.state);
+    });
+})();
+```
+
+`onParentMessage()`'s first parameter is the `SharedMemory` API, and the second is whatever data that was sent from the parent to the worker.
+
+> Important note: The types of operations you can do in the `onParentMessage` function are very limited. Attempting to use imported modules/external variables will result in nasty errors.
