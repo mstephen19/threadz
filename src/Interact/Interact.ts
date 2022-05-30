@@ -14,9 +14,9 @@ export default class Interact<T extends DeclarationFunction> {
 
     private worker: ThreadzWorker;
 
-    private sharedMemory: SharedMemory;
+    private sharedMemory: SharedMemory<any>;
 
-    private callback: (sharedMem: SharedMemory, data: unknown) => any;
+    private callback: (sharedMem: SharedMemory<any>, data: unknown) => any;
 
     private constructor(name: string, path: string, options: Options) {
         this.name = name;
@@ -51,7 +51,6 @@ export default class Interact<T extends DeclarationFunction> {
             { name: this.name, args: this.arguments, declarationsPath: this.declarationsPath },
             this.options,
             this.sharedMemory,
-            this.callback
         );
 
         WorkerPool.go(this.worker, false);

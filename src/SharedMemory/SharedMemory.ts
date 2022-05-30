@@ -1,50 +1,63 @@
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { TextEncoder, TextDecoder } from 'util';
 import { ThreadzError } from '../utils';
+import { atomicStore, decodeUint8Array, encodeText, parseJSON, stringifyJSON } from './utils';
 
 interface SharedMemoryEvents {
     change: <T>(data: any) => T | void;
 }
 
-export default class SharedMemory<T extends unknown = {}> extends TypedEmitter<SharedMemoryEvents> {
+export default class SharedMemory<T extends unknown> extends TypedEmitter<SharedMemoryEvents> {
     shared: Uint8Array;
 
-    constructor({ initialState = {} as T, sizeMb, uInt8Array }: { initialState?: T; sizeMb?: number; uInt8Array?: Uint8Array }) {
+    private constructor(initialState: Uint8Array | T, sizeMb?: number) {
         super();
         try {
-            if (!initialState && !uInt8Array) throw new ThreadzError('must provide either an initial state or a Uint8Array');
+            if (!initialState) throw new ThreadzError('must provide an initial state!');
 
-            if (uInt8Array) {
-                this.shared = uInt8Array;
+            // If they created their own Uint8Array for the initial state, just set this.shared to be that
+            if (initialState instanceof Uint8Array) {
+                this.shared = initialState;
                 return;
             }
 
+            // Otherwise, create a new Uint8Array from a SharedArrayBuffer and use that
             const shared = new SharedArrayBuffer(sizeMb ? Math.floor(sizeMb * 1e6) : 1e6);
             this.shared = new Uint8Array(shared);
 
-            this.state = initialState;
+            // Then, serialize the initial state
+            this.set(initialState);
         } catch (err) {
             throw new ThreadzError('failed when creating shared memory: ' + (err as Error).message);
         }
     }
 
-    static from<T extends unknown>(arr: Uint8Array) {
-        return new SharedMemory<T>({ uInt8Array: arr });
+    static from<T extends unknown>(state: Uint8Array | T) {
+        if (!state) return undefined;
+
+        return new SharedMemory<T>(state);
     }
 
     //@ts-ignore
-    get state(): string {
+    async get() {
         try {
-            return new TextDecoder().decode(this.shared);
+            const decoded = await decodeUint8Array(this.shared);
+
+            const parsed = await parseJSON<T>(decoded);
+            return parsed;
         } catch (err) {
             throw new ThreadzError('failed when grabbing shared memory: ' + (err as Error).message);
         }
     }
 
-    set state(newState: T) {
+    async set(newState: T) {
         try {
-            const encoded = new TextEncoder().encode(JSON.stringify(newState));
-            encoded.forEach((num, i) => Atomics.store(this.shared, i, num));
+            const stringified = await stringifyJSON(newState);
+            const encoded = await encodeText(stringified);
+
+            const promises = [...encoded].map((_, i) => atomicStore(this.shared, i, encoded[i]));
+
+            await Promise.all(promises);
         } catch (err) {
             throw new ThreadzError('failed when setting shared memory: ' + (err as Error).message);
         }

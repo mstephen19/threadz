@@ -5,6 +5,7 @@ import type { GoArguments, Options } from '../runWorker/types';
 import type { WorkerResponse } from './types';
 import SharedMemory from '../SharedMemory';
 import { ThreadzError } from '../utils';
+import { rejects } from 'assert';
 
 interface WorkerEvents {
     success: <T>(data: any) => T | void;
@@ -22,14 +23,13 @@ export class ThreadzWorker<T extends unknown = {}> extends TypedEmitter<WorkerEv
     private wasRun: boolean;
     callback: (sharedMem: SharedMemory<T>, data: unknown) => any;
 
-    constructor(config: GoArguments, options: Options, memory?: SharedMemory<T>, callback?: (sharedMem: SharedMemory<T>, data: unknown) => any) {
+    constructor(config: GoArguments, options: Options, memory?: SharedMemory<T>) {
         super();
 
         this.wasRun = false;
         this.config = config;
         this.options = options;
         this.sharedMemory = memory?.shared;
-        this.callback = callback;
     }
 
     run() {
@@ -37,7 +37,7 @@ export class ThreadzWorker<T extends unknown = {}> extends TypedEmitter<WorkerEv
         this.wasRun = true;
         const worker = new Worker(path.join(__dirname, '../worker/index.js'), {
             ...this.options,
-            workerData: { ...this.config, memory: this.sharedMemory, callback: this.callback?.toString() },
+            workerData: { ...this.config, memory: this.sharedMemory },
             env: SHARE_ENV,
         });
 
@@ -54,5 +54,17 @@ export class ThreadzWorker<T extends unknown = {}> extends TypedEmitter<WorkerEv
 
     sendMessage<T>(data: T) {
         this.worker.postMessage(data);
+    }
+
+    waitFor() {
+        return new Promise((resolve, reject) => {
+            this.on('success', (data) => {
+                resolve(data);
+            });
+
+            this.on('error', (err) => {
+                reject(new ThreadzError(`worker failed: ${err?.message}`));
+            });
+        });
     }
 }

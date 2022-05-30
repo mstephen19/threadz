@@ -17,7 +17,7 @@ export const runWorker = async <P extends unknown[], R>(name: string, declaratio
         });
 
         worker.on('error', (err) => {
-            reject(new ThreadzError(`worker failed: ${(err as Error).message}`));
+            reject(new ThreadzError(`worker failed: ${(err as Error)?.message}`));
         });
     });
 };

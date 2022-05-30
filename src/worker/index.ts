@@ -4,22 +4,14 @@ import SharedMemory from '../SharedMemory';
 import type { WorkerArgs } from './types';
 
 const run = async () => {
-    const { name, args, declarationsPath, memory, callback }: WorkerArgs = workerData;
+    const { name, args, declarationsPath, memory }: WorkerArgs = workerData;
 
     try {
         const {
             _threadz: { declarations },
         } = (await import(declarationsPath)).default;
 
-        const evaluatedCallback = eval(callback);
-
         const sharedMemory = SharedMemory.from(memory);
-
-        parentPort.on('message', async (data: any) => {
-            console.log('hi');
-            if (typeof evaluatedCallback !== 'function') return;
-            await evaluatedCallback(sharedMemory, data);
-        });
 
         const data = await declarations[name]?.worker(...args);
 

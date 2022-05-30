@@ -36,6 +36,7 @@
     "dependencies": {
         "caller-callsite": "^4.1.0",
         "chalk": "^4.1.2",
+        "dirty-json": "^0.9.2",
         "tiny-typed-emitter": "^2.1.0"
     }
 }

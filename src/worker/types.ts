@@ -3,5 +3,4 @@ export interface WorkerArgs {
     args: unknown[];
     declarationsPath: string;
     memory: Uint8Array;
-    callback: string;
 }
