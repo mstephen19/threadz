@@ -5,6 +5,7 @@ import ThreadzWorker from '../ThreadzWorker';
 import { ThreadzError } from '../utils';
 import WorkerPool from '../WorkerPool';
 import SharedMemory from '../SharedMemory';
+import { v4 } from 'uuid';
 
 export default class Interact<T extends DeclarationFunction> {
     private name: string;
@@ -13,10 +14,7 @@ export default class Interact<T extends DeclarationFunction> {
     private arguments: Parameters<T>;
 
     private worker: ThreadzWorker;
-
     private sharedMemory: SharedMemory<any>;
-
-    private callback: (sharedMem: SharedMemory<any>, data: unknown) => any;
 
     private constructor(name: string, path: string, options: Options) {
         this.name = name;
@@ -41,16 +39,11 @@ export default class Interact<T extends DeclarationFunction> {
         return this;
     }
 
-    onParentMessage<T>(callback: (sharedMem: SharedMemory<T>, data: unknown) => unknown | Promise<unknown>) {
-        this.callback = callback;
-        return this;
-    }
-
     go() {
         this.worker = new ThreadzWorker(
             { name: this.name, args: this.arguments, declarationsPath: this.declarationsPath },
             this.options,
-            this.sharedMemory,
+            this.sharedMemory
         );
 
         WorkerPool.go(this.worker, false);

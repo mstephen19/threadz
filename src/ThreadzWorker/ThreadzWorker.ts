@@ -21,7 +21,6 @@ export class ThreadzWorker<T extends unknown = {}> extends TypedEmitter<WorkerEv
     sharedMemory: Uint8Array;
     private worker: Worker;
     private wasRun: boolean;
-    callback: (sharedMem: SharedMemory<T>, data: unknown) => any;
 
     constructor(config: GoArguments, options: Options, memory?: SharedMemory<T>) {
         super();

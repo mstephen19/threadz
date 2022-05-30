@@ -1,14 +1,19 @@
-import { APIFunction } from '../Interact/types';
 import { Options } from '../runWorker/types';
 import SharedMemory from '../SharedMemory';
 
 export type DeclarationFunction = { (...args: any[]): unknown | Promise<unknown> };
+
+export type OnParentMessageFunction = <T, A>(data: T | unknown, memory: SharedMemory<A | unknown>) => void | Promise<void>;
 
 export interface DeclarationProperty {
     /**
      * Provide the function to be used within the worker.
      */
     worker: DeclarationFunction;
+    /**
+     * The function to run when a message is received from the parent
+     */
+    onParentMessage?: OnParentMessageFunction;
     /**
      * Extra options to pass to the worker. See [here](https://nodejs.org/api/worker_threads.html#workerresourcelimits) for more details.
      */
@@ -36,6 +41,12 @@ interface _Threadz {
      * The location at which the declarations file lives.
      */
     location: string;
+    /**
+     *
+     */
+    onParentMessageCallbacks: {
+        [key: string]: OnParentMessageFunction;
+    };
 }
 
 type ThreadzFunction<T extends DeclarationFunction> = {

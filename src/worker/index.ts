@@ -1,4 +1,5 @@
 import { parentPort, workerData } from 'worker_threads';
+import { DeclarationsInterface, ThreadzAPI } from '../declare/types';
 import SharedMemory from '../SharedMemory';
 
 import type { WorkerArgs } from './types';
@@ -8,10 +9,14 @@ const run = async () => {
 
     try {
         const {
-            _threadz: { declarations },
-        } = (await import(declarationsPath)).default;
+            _threadz: { declarations, onParentMessageCallbacks },
+        } = (await import(declarationsPath)).default as ThreadzAPI<DeclarationsInterface>;
 
         const sharedMemory = SharedMemory.from(memory);
+
+        if (onParentMessageCallbacks?.[name]) {
+            parentPort.on('message', (data) => onParentMessageCallbacks?.[name](data, sharedMemory));
+        }
 
         const data = await declarations[name]?.worker(...args);
 

@@ -26,8 +26,18 @@ export const declare = <T extends DeclarationsInterface>(declarations: T) => {
 
     const activeWorkers = () => WorkerPool.active;
 
+    const onParentMessageCallbacks = Object.fromEntries(
+        Object.keys(declarations)
+            .filter((key) => !!declarations[key]?.onParentMessage)
+            .map((key) => {
+                const func = declarations[key]?.onParentMessage;
+
+                return [key, func];
+            })
+    );
+
     return {
         ...workers,
-        _threadz: { declarations, maxWorkers, activeWorkers, location },
+        _threadz: { declarations, maxWorkers, activeWorkers, location, onParentMessageCallbacks },
     } as unknown as ThreadzAPI<T>;
 };
