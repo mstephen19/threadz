@@ -1,21 +1,20 @@
 import { isMainThread, parentPort, threadId } from 'worker_threads';
-import { OnParentMessageFunction } from '../declare/types';
 
 /**
  * Send a message to the parent thread.
  */
-const sendMessageToParent = <T>(data: T) => {
+const sendMessageToParent = <T = unknown>(data: T) => {
     parentPort.postMessage({ message: data });
 };
 
 /**
  * Listen for messages sent from the parent thread.
  */
-const onParentMessage = (callback: OnParentMessageFunction) => {
+const onParentMessage = <T = unknown>(callback: (data: T) => void | Promise<void>) => {
     parentPort.on('message', async (data) => {
-        await callback(data)
-    })
-}
+        await callback(data);
+    });
+};
 
 /**
  * Completely abort the worker. It will fire the "success" event
@@ -27,6 +26,11 @@ const abort = () => {
 };
 
 /**
+ * In order to prevent a worker from hanging, abort after a certain number of seconds
+ */
+const abortOnTimeout = (seconds: number) => setTimeout(abort, seconds * 1e3);
+
+/**
  * Contains tools too use within a worker function.
  */
-export const toolBox = () => ({ isMainThread, threadId, sendMessageToParent, onParentMessage, abort });
+export const toolBox = () => ({ isMainThread, threadId, sendMessageToParent, onParentMessage, abort, abortOnTimeout });

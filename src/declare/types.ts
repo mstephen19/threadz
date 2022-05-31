@@ -3,7 +3,7 @@ import SharedMemory from '../SharedMemory';
 
 export type DeclarationFunction = { (...args: any[]): unknown | Promise<unknown> };
 
-export type OnParentMessageFunction = (data: any, memory?: SharedMemory<any>) => void | Promise<void>;
+export type OnParentMessageFunction<T = any, A = any> = (data: T, memory?: SharedMemory<A>) => void | Promise<void>;
 
 export interface DeclarationProperty {
     /**

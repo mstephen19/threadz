@@ -7,8 +7,9 @@ import { ThreadzError } from '../utils';
 import { OnWorkerMessageCallback } from '../Interact/types';
 
 interface WorkerEvents {
-    success: <T>(data: any) => T | void;
-    error: <T>(error: Error) => T | void;
+    success: <T = unknown>(data: T) => void | Promise<void>;
+    error: (error: Error) => void | Promise<void>;
+    message: <T = unknown>(data: T) => void | Promise<void>;
 }
 
 /**
@@ -38,7 +39,7 @@ export class ThreadzWorker extends TypedEmitter<WorkerEvents> {
         this.wasRun = true;
         const worker = new Worker(path.join(__dirname, '../worker/index.js'), {
             ...this.options,
-            workerData: { ...this.config},
+            workerData: { ...this.config },
             env: SHARE_ENV,
         });
 
@@ -46,7 +47,10 @@ export class ThreadzWorker extends TypedEmitter<WorkerEvents> {
 
         // The worker is itself configured to never throw. It always sends a message object
         worker.on('message', ({ success, error, data, message }: WorkerResponse) => {
-            if (message && this?.callback) return this.callback(message);
+            if (message && this?.callback) {
+                this.emit('message', message);
+                return this.callback(message);
+            }
 
             if (message) return;
 
@@ -76,10 +80,10 @@ export class ThreadzWorker extends TypedEmitter<WorkerEvents> {
     /**
      * Wait for the worker to complete. If it returned anything, it will be returned from this function.
      */
-    waitFor() {
+    waitFor<T = unknown>(): Promise<T> {
         return new Promise((resolve, reject) => {
             this.on('success', (data) => {
-                resolve(data);
+                resolve(data as unknown as T);
             });
 
             this.on('error', (err) => {

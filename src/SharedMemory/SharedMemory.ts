@@ -11,7 +11,7 @@ import { atomicStore, decodeUint8Array, encodeText, parseJSON, stringifyJSON } f
 /**
  * Share memory between two threads. The "shared" property can safely be passed into a worker function as an argument.
  */
-export default class SharedMemory<T extends unknown> {
+export default class SharedMemory<T = unknown> {
     shared: Uint8Array;
 
     private constructor(initialState: Uint8Array | T, sizeMb?: number) {
@@ -38,13 +38,15 @@ export default class SharedMemory<T extends unknown> {
     /**
      * Create a new SharedMemory instance from either a Uint8Array or an JSON serializable item.
      */
-    static from<T extends unknown>(state: Uint8Array | T, sizeMb?: number) {
+    static from<A = unknown>(state: Uint8Array | A, sizeMb?: number): SharedMemory<A> {
         if (!state) return undefined;
+
+        if (state instanceof SharedMemory) return state;
 
         //@ts-ignore
         if (!!state?._isSharedMemory) return new SharedMemory(state._isSharedMemory);
 
-        return new SharedMemory<T>(state, sizeMb);
+        return new SharedMemory<A>(state, sizeMb);
     }
 
     /**
