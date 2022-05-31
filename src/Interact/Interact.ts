@@ -6,7 +6,7 @@ import WorkerPool from '../WorkerPool';
 import SharedMemory from '../SharedMemory';
 
 /**
- * Interact with a declared worker by passing shared memory or sending messages
+ * Interact with a declared worker by passing shared memory or sending messages.
  */
 export default class Interact<T extends DeclarationFunction> {
     private name: string;
@@ -27,21 +27,33 @@ export default class Interact<T extends DeclarationFunction> {
         this.arguments = [] as Parameters<T>;
     }
 
+    /**
+     * Pass in a function from ThreadzAPI.
+     */
     static with<T extends DeclarationFunction>(func: T) {
         const { _name, _path, _options } = func as unknown as APIFunction;
         return new Interact<T>(_name, _path, _options);
     }
 
+    /**
+     * Arguments for the worker.
+     */
     args(...rest: Parameters<T>) {
         this.arguments = rest;
         return this;
     }
 
+    /**
+     * Handle messages received from the worker.
+     */
     onMessage<T>(callback: OnWorkerMessageCallback<T>) {
         this.callback = callback;
         return this;
     }
 
+    /**
+     * Call this function at the end of the `Interact` chain.
+     */
     go() {
         this.worker = new ThreadzWorker(
             { name: this.name, args: this.arguments, declarationsPath: this.declarationsPath },

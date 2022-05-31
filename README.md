@@ -1,6 +1,6 @@
 # Threadz
 
-![ts](https://flat.badgen.net/badge/Built%20With/TypeScript/blue)
+![ts](https://flat.badgen.net/badge/Built%20With/TypeScript/blue) ![npm](https://img.shields.io/npm/dw/threadz) ![npm](https://img.shields.io/npm/v/threadz)
 
 ## About
 
@@ -44,7 +44,7 @@ npm install threadz
 
 ## Examples
 
-Throughout the README, you will see various examples using all of the available **Threadz** APIS. Here are two basic examples to help understand the basics of multithreading with **Threadz**:
+Throughout the README, you will see various examples using all of the available **Threadz** APIs. Here are two basic examples to help understand the basics of multithreading with **Threadz**:
 
 ### Basic example
 
@@ -295,6 +295,8 @@ import { SharedMemory } from 'threadz';
     const data = SharedMemory.from({ foo: 'bar' });
 })();
 ```
+
+> An optional second parameter can be provided, which specifies the size (in MB) to make the [`SharedArrayBuffer`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer). It defaults to **1MB**, which is quite generous.
 
 It can then be mutated and accessed asynchronously using `set` and `get`:
 

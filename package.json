@@ -1,6 +1,6 @@
 {
     "name": "threadz",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "Manageable multi-threading in Node.js.",
     "main": "dist/index.js",
     "types": "dist/types",

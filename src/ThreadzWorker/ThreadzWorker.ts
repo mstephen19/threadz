@@ -57,16 +57,25 @@ export class ThreadzWorker extends TypedEmitter<WorkerEvents> {
         });
     }
 
+    /**
+     * Send a message to the worker thread.
+     */
     sendMessage<T>(data: T) {
         this.worker.postMessage(data);
     }
 
+    /**
+     * Handle messages from the worker.
+     */
     onMessage<T>(callback: OnWorkerMessageCallback<T>) {
         this.worker.on('message', ({ message }) => {
             if (message) return callback(message);
         });
     }
 
+    /**
+     * Wait for the worker to complete. If it returned anything, it will be returned from this function.
+     */
     waitFor() {
         return new Promise((resolve, reject) => {
             this.on('success', (data) => {
