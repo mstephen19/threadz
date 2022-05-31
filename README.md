@@ -487,7 +487,7 @@ export default declare({
 });
 ```
 
-> `toolBox` currently offers three other tools - `isMainThread`, `threadId`, and the `abort` function.
+> `toolBox` currently offers three other tools - `isMainThread`, `threadId`, `onParentMessage` (alternative to the `onParentMessage` key in a declaration), and the `abort` function.
 
 To listen for messages back in the parent, there are two ways you can do it. Either use the `.onMessage` method in the `Interact` method chain, or directly on the worker.
 

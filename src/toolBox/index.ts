@@ -1,4 +1,5 @@
 import { isMainThread, parentPort, threadId } from 'worker_threads';
+import { OnParentMessageFunction } from '../declare/types';
 
 /**
  * Send a message to the parent thread.
@@ -6,6 +7,15 @@ import { isMainThread, parentPort, threadId } from 'worker_threads';
 const sendMessageToParent = <T>(data: T) => {
     parentPort.postMessage({ message: data });
 };
+
+/**
+ * Listen for messages sent from the parent thread.
+ */
+const onParentMessage = (callback: OnParentMessageFunction) => {
+    parentPort.on('message', async (data) => {
+        await callback(data)
+    })
+}
 
 /**
  * Completely abort the worker. It will fire the "success" event
@@ -19,4 +29,4 @@ const abort = () => {
 /**
  * Contains tools too use within a worker function.
  */
-export const toolBox = () => ({ isMainThread, threadId, sendMessageToParent, abort });
+export const toolBox = () => ({ isMainThread, threadId, sendMessageToParent, onParentMessage, abort });
