@@ -3,7 +3,7 @@ import SharedMemory from '../SharedMemory';
 
 export type DeclarationFunction = { (...args: any[]): unknown | Promise<unknown> };
 
-export type OnParentMessageFunction = <T, A>(data: T | unknown, memory: SharedMemory<A | unknown>) => void | Promise<void>;
+export type OnParentMessageFunction = (data: any, memory: SharedMemory<any>) => void | Promise<void>;
 
 export interface DeclarationProperty {
     /**
@@ -11,7 +11,7 @@ export interface DeclarationProperty {
      */
     worker: DeclarationFunction;
     /**
-     * The function to run when a message is received from the parent
+     * The function to run when a message is received from the parent.
      */
     onParentMessage?: OnParentMessageFunction;
     /**
@@ -28,7 +28,7 @@ interface _Threadz {
     /**
      * The maximum number of workers that can be run simultaneously.
      */
-    maxWorkers: number;
+    maxWorkers: () => number;
     /**
      * Get the current number of currently active workers.
      */
@@ -42,7 +42,7 @@ interface _Threadz {
      */
     location: string;
     /**
-     *
+     * All of your onParentMessage callbacks.
      */
     onParentMessageCallbacks: {
         [key: string]: OnParentMessageFunction;

@@ -1,17 +1,20 @@
-import { TypedEmitter } from 'tiny-typed-emitter';
+// import { TypedEmitter } from 'tiny-typed-emitter';
 import { TextEncoder, TextDecoder } from 'util';
 import { ThreadzError } from '../utils';
+import { MemoryArgument } from '../worker/types';
 import { atomicStore, decodeUint8Array, encodeText, parseJSON, stringifyJSON } from './utils';
 
-interface SharedMemoryEvents {
-    change: <T>(data: any) => T | void;
-}
+// interface SharedMemoryEvents {
+//     change: <T>(data: any) => T | void;
+// }
 
-export default class SharedMemory<T extends unknown> extends TypedEmitter<SharedMemoryEvents> {
+/**
+ * Share memory between two threads. The "shared" property can safely be passed into a worker function as an argument.
+ */
+export default class SharedMemory<T extends unknown> {
     shared: Uint8Array;
 
     private constructor(initialState: Uint8Array | T, sizeMb?: number) {
-        super();
         try {
             if (!initialState) throw new ThreadzError('must provide an initial state!');
 
@@ -26,19 +29,27 @@ export default class SharedMemory<T extends unknown> extends TypedEmitter<Shared
             this.shared = new Uint8Array(shared);
 
             // Then, serialize the initial state
-            this.set(initialState);
+            this.setSync(initialState);
         } catch (err) {
             throw new ThreadzError('failed when creating shared memory: ' + (err as Error).message);
         }
     }
 
-    static from<T extends unknown>(state: Uint8Array | T) {
+    /**
+     * Create a new SharedMemory instance from either a Uint8Array or an JSON serializable item.
+     */
+    static from<T extends unknown>(state: Uint8Array | T, sizeMb?: number) {
         if (!state) return undefined;
 
-        return new SharedMemory<T>(state);
+        //@ts-ignore
+        if (!!state?._isSharedMemory) return new SharedMemory(state._isSharedMemory);
+
+        return new SharedMemory<T>(state, sizeMb);
     }
 
-    //@ts-ignore
+    /**
+     * Asynchronously get the current state.
+     */
     async get() {
         try {
             const decoded = await decodeUint8Array(this.shared);
@@ -50,10 +61,18 @@ export default class SharedMemory<T extends unknown> extends TypedEmitter<Shared
         }
     }
 
-    async set(newState: T) {
+    /**
+     * Asynchronously set the state.
+     */
+    async set(newState: T, { wipe }: { wipe: boolean } = { wipe: false }) {
         try {
             const stringified = await stringifyJSON(newState);
             const encoded = await encodeText(stringified);
+
+            if (wipe) {
+                const wipers = [...this.shared].map((_, i) => atomicStore(this.shared, i, 0));
+                await Promise.all(wipers);
+            }
 
             const promises = [...encoded].map((_, i) => atomicStore(this.shared, i, encoded[i]));
 
@@ -61,5 +80,39 @@ export default class SharedMemory<T extends unknown> extends TypedEmitter<Shared
         } catch (err) {
             throw new ThreadzError('failed when setting shared memory: ' + (err as Error).message);
         }
+    }
+
+    /**
+     * Synchronously get the current state.
+     */
+    getSync() {
+        try {
+            const decoded = new TextDecoder().decode(this.shared);
+            const parsed = JSON.parse(decoded.trim().replace(/\0/g, ''));
+            return parsed;
+        } catch (err) {
+            throw new ThreadzError('failed when grabbing shared memory: ' + (err as Error).message);
+        }
+    }
+
+    /**
+     * Synchronously set the state.
+     */
+    setSync(newState: T, { wipe }: { wipe: boolean } = { wipe: false }) {
+        try {
+            const encoded = new TextEncoder().encode(JSON.stringify(newState));
+
+            if (wipe) {
+                this.shared.forEach((_, i) => Atomics.store(this.shared, i, 0));
+            }
+
+            encoded.forEach((num, i) => Atomics.store(this.shared, i, num));
+        } catch (err) {
+            throw new ThreadzError('failed when setting shared memory: ' + (err as Error).message);
+        }
+    }
+
+    pass() {
+        return { _isSharedMemory: this.shared } as unknown as SharedMemory<T>;
     }
 }

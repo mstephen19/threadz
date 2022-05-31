@@ -3,9 +3,8 @@ import path from 'path';
 import { TypedEmitter } from 'tiny-typed-emitter';
 import type { GoArguments, Options } from '../runWorker/types';
 import type { WorkerResponse } from './types';
-import SharedMemory from '../SharedMemory';
 import { ThreadzError } from '../utils';
-import { rejects } from 'assert';
+import { OnWorkerMessageCallback } from '../Interact/types';
 
 interface WorkerEvents {
     success: <T>(data: any) => T | void;
@@ -15,35 +14,42 @@ interface WorkerEvents {
 /**
  * Works similar to a regular worker, but doesn't run immediately.
  */
-export class ThreadzWorker<T extends unknown = {}> extends TypedEmitter<WorkerEvents> {
+export class ThreadzWorker extends TypedEmitter<WorkerEvents> {
     private config: GoArguments;
     private options: Options;
-    sharedMemory: Uint8Array;
     private worker: Worker;
     private wasRun: boolean;
+    private callback: OnWorkerMessageCallback;
 
-    constructor(config: GoArguments, options: Options, memory?: SharedMemory<T>) {
+    constructor(config: GoArguments, options: Options, callback?: OnWorkerMessageCallback) {
         super();
 
         this.wasRun = false;
         this.config = config;
         this.options = options;
-        this.sharedMemory = memory?.shared;
+        this.callback = callback;
     }
 
+    /**
+     * Don't use this function unless you know what you're doing.
+     */
     run() {
         if (this.wasRun) throw new ThreadzError('this worker was already run!');
         this.wasRun = true;
         const worker = new Worker(path.join(__dirname, '../worker/index.js'), {
             ...this.options,
-            workerData: { ...this.config, memory: this.sharedMemory },
+            workerData: { ...this.config},
             env: SHARE_ENV,
         });
 
         this.worker = worker;
 
-        // The worker is configured to never throw. It always sends a message object
-        worker.on('message', ({ success, error, data }: WorkerResponse) => {
+        // The worker is itself configured to never throw. It always sends a message object
+        worker.on('message', ({ success, error, data, message }: WorkerResponse) => {
+            if (message && this?.callback) return this.callback(message);
+
+            if (message) return;
+
             if (!success) this.emit('error', error);
             else this.emit('success', data);
 
@@ -53,6 +59,12 @@ export class ThreadzWorker<T extends unknown = {}> extends TypedEmitter<WorkerEv
 
     sendMessage<T>(data: T) {
         this.worker.postMessage(data);
+    }
+
+    onMessage<T>(callback: OnWorkerMessageCallback<T>) {
+        this.worker.on('message', ({ message }) => {
+            if (message) return callback(message);
+        });
     }
 
     waitFor() {

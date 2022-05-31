@@ -1,12 +1,13 @@
 import type { Options } from '../runWorker/types';
 import type { DeclarationFunction } from '../declare/types';
-import type { APIFunction } from './types';
+import type { APIFunction, OnWorkerMessageCallback } from './types';
 import ThreadzWorker from '../ThreadzWorker';
-import { ThreadzError } from '../utils';
 import WorkerPool from '../WorkerPool';
 import SharedMemory from '../SharedMemory';
-import { v4 } from 'uuid';
 
+/**
+ * Interact with a declared worker by passing shared memory or sending messages
+ */
 export default class Interact<T extends DeclarationFunction> {
     private name: string;
     private declarationsPath: string;
@@ -15,6 +16,8 @@ export default class Interact<T extends DeclarationFunction> {
 
     private worker: ThreadzWorker;
     private sharedMemory: SharedMemory<any>;
+
+    private callback: OnWorkerMessageCallback<any>;
 
     private constructor(name: string, path: string, options: Options) {
         this.name = name;
@@ -34,8 +37,8 @@ export default class Interact<T extends DeclarationFunction> {
         return this;
     }
 
-    memory<T extends unknown>(sharedMemory: SharedMemory<T>) {
-        this.sharedMemory = sharedMemory;
+    onMessage<T>(callback: OnWorkerMessageCallback<T>) {
+        this.callback = callback;
         return this;
     }
 
@@ -43,7 +46,7 @@ export default class Interact<T extends DeclarationFunction> {
         this.worker = new ThreadzWorker(
             { name: this.name, args: this.arguments, declarationsPath: this.declarationsPath },
             this.options,
-            this.sharedMemory
+            this.callback
         );
 
         WorkerPool.go(this.worker, false);
