@@ -50,7 +50,7 @@ export default class SharedMemory<T extends unknown> {
     /**
      * Asynchronously get the current state.
      */
-    async get() {
+    async get(): Promise<T> {
         try {
             const decoded = await decodeUint8Array(this.shared);
 
@@ -85,7 +85,7 @@ export default class SharedMemory<T extends unknown> {
     /**
      * Synchronously get the current state.
      */
-    getSync() {
+    getSync(): T {
         try {
             const decoded = new TextDecoder().decode(this.shared);
             const parsed = JSON.parse(decoded.trim().replace(/\0/g, ''));
