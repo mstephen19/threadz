@@ -2,35 +2,62 @@ import { cpus } from 'os';
 import { MyError } from '../Errors';
 import { ERROR_CONFIG, MaxConcurrencyOptions } from './consts';
 import { ThreadzWorker } from '../ThreadzWorker';
+import { TypedEmitter } from 'tiny-typed-emitter';
 
-import type { MaxConcurrencyOptionsType } from './types';
+import type { MaxConcurrencyOptionsType, ThreadzWorkerPoolEvents } from './types';
 
 /**
  * The API used by Threadz to manage all ThreadzWorker instances. Only one instance of the ThreadzWorkerPool is created.
  */
-export class ThreadzWorkerPool {
+export class ThreadzWorkerPool extends TypedEmitter<ThreadzWorkerPoolEvents> {
     private active: number;
     readonly cpus: number;
     private max: number;
     private queue: ThreadzWorker[];
 
     constructor() {
+        super();
+
         this.active = 0;
         this.cpus = cpus().length;
         this.max = this.cpus * 2;
         this.queue = [];
     }
 
+    /**
+     * Whether or not the queue is currently full.
+     */
     get queueIsFull() {
         return this.active >= this.max;
     }
 
+    /**
+     * The number of workers which are currently running.
+     */
     get currentlyActive() {
         return this.active;
     }
 
+    /**
+     * The maximum number of workers that ThreadzWorkerPool will allow to run concurrently.
+     */
     get maxConcurrency() {
         return this.max;
+    }
+
+    /**
+     * Retrieve the name, location, and arguments of the next worker in the queue to be run.
+     */
+    get nextUp() {
+        if (!this.queue[0]) return;
+        return this.queue[0].workerData;
+    }
+
+    /**
+     * If `true`, the ThreadzWorkerPool is not currently running any workers and the queue is empty.
+     */
+    get dormant() {
+        return !this.active && !this.queue.length;
     }
 
     /**
@@ -38,6 +65,21 @@ export class ThreadzWorkerPool {
      * @param value A number or a `MaxConcurrencyOptions` value to limit the number of workers that can be run at a single time.
      *
      * **NOTE:** It is recommended to use `MaxConcurrencyOptions` values. Do not set this number to be ridiculously high. The maximum allowed is `numberOfMachineCpus * 50`, which is already ridiculous.
+     * 
+     * @example
+     * // Using MaxConcurrencyOptions
+     * ThreadzPool.setMaxConcurrency('1/4');
+     * ThreadzPool.setMaxConcurrency('1/2');
+     * ThreadzPool.setMaxConcurrency('3/4');
+     * ThreadzPool.setMaxConcurrency('100%');
+     * ThreadzPool.setMaxConcurrency('200%');
+     * ThreadzPool.setMaxConcurrency('400%');
+     * 
+     * // Using a number
+     * ThreadzPool.setMaxConcurrency(6));
+     * 
+     * // This will error out unless your machine somehow has 40 cores
+     * ThreadzPool.setMaxConcurrency(2000);
      */
     setMaxConcurrency<T extends MaxConcurrencyOptionsType>(value: T): void;
     setMaxConcurrency(value: number): void;
@@ -96,16 +138,16 @@ export class ThreadzWorkerPool {
     }
 
     #executeNextWorker() {
-        if (this.queueIsFull) return;
+        if (this.queueIsFull || !this.queue.length) return;
 
         // Pull the worker from the front of the queue.
         const worker = this.queue.shift();
 
-        if (!worker) return;
-
         const handleWorkerCompletion = () => {
             this.active--;
             this.#executeNextWorker();
+
+            if (this.dormant) this.emit('dormant');
         };
 
         // Once the worker is finished, attempt to run the next worker in the queue.

@@ -20,7 +20,7 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
     readonly options: WorkerOptions;
     readonly workerData: WorkerData;
     priority: boolean;
-    protected isRunning: boolean;
+    protected running: boolean;
     private worker: Worker;
 
     constructor({ priority, options, workerData }: { priority: boolean; options: WorkerOptions; workerData: WorkerData }) {
@@ -33,11 +33,11 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
 
     /**
      * Don't use this method unless you really know what you're doing.
-     * 
+     *
      * Will have no effect if the worker is already running.
      */
     go() {
-        if (this.isRunning) return;
+        if (this.running) return;
 
         const worker = new Worker(path.join(__dirname, '../worker/index.js'), {
             ...this.options,
@@ -45,7 +45,7 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
             env: SHARE_ENV,
         });
 
-        this.isRunning = true;
+        this.running = true;
         this.worker = worker;
 
         worker.on('message', (payload: WorkerMessagePayload) => {
@@ -59,34 +59,56 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
 
             if (done && error) this.emit('error', new MyError(ERROR_CONFIG(`Failed within worker: ${error}`)));
 
-            this.isRunning = false;
+            this.running = false;
             worker.terminate();
         });
     }
 
     /**
+     * Whether or not the worker is currently running.
+     */
+    get isRunning() {
+        return this.running;
+    }
+
+    /**
      *
      * @param priority A boolean or `0`/`1` defining what priority status the worker should have. Will have no effect if the worker is already running.
+     * 
+     * @example
+     * worker.setPriority(0);
+     * worker.setPriority(1);
+     * worker.setPriority(true);
+     * worker.setPriority(false);
      */
     setPriority(priority: boolean | 1 | 0) {
         if (typeof priority !== 'boolean' && priority !== 1 && priority !== 0) return;
-        if (this.isRunning) return;
+        if (this.running) return;
 
         this.priority = !!priority;
     }
 
     /**
-     * 
+     *
      * @param data Send a message to the worker
+     * 
+     * @example worker.sendMessage('hello worker!');
      */
     sendMessage<T extends AcceptableDataType>(data: T | SharedMemoryTransferObject) {
+        if (!this.running) return;
+
         this.worker.postMessage(data);
     }
 
     /**
      * Wait for the worker to finish, and get its returned result.
-     * 
+     *
      * @returns A promise of the return value of the original declaration function
+     * 
+     * @example
+     * const data = await worker.waitFor();
+     * 
+     * console.log(data);
      */
     waitFor(): Promise<DeepUnPromisify<ReturnType<T>>> {
         return new Promise((resolve, reject) => {

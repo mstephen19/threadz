@@ -64,13 +64,27 @@ export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmit
     }
 
     /**
-     *
+     * Grab hold of the ThreadzWorkerPool instance.
      */
     get threadzPool() {
         return ThreadzWorkerPool;
     }
 
+    /**
+     *
+     * @param name Name of the worker on this ThreadzAPI instance to interact with. Shortcut to using `Interact.with()`
+     * @returns Interact API instance
+     * 
+     * @example
+     * const worker = api.interactWith('myFunc').args('abc', 123).go();
+     * 
+     * await worker.waitFor()
+     */
     interactWith<K extends keyof T>(name: K) {
+        if (!this.workers[name]) {
+            throw new MyError(ERROR_CONFIG(`A worker with the name ${name} doesn't exist on this ThreadzAPI instance. Check your declarations.`));
+        }
+
         return Interact.with(this.workers[name]);
     }
 

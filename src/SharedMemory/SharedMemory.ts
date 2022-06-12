@@ -38,7 +38,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
         // this function, just return that SharedMemory instance
         if (state instanceof SharedMemory) return state;
 
-        // If the object passed in has this key, that means it's a
+        // If the object passed in has this key, that means it's a SharedMemoryTransferObject
         if (isSharedMemoryTransferObject(state)) return new SharedMemory(state._sharedMemoryByteArray);
 
         try {

@@ -1,4 +1,4 @@
-import { parentPort, isMainThread } from 'worker_threads';
+import { parentPort, isMainThread, threadId as threadIdValue } from 'worker_threads';
 import { MyError } from '../Errors';
 import { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory';
 import type { WorkerMessagePayload } from '../worker/types';
@@ -6,6 +6,8 @@ import { ERROR_CONFIG } from './consts';
 
 /**
  * Send a message to be consumed back on the main thread.
+ * 
+ * @example workerTools.sendMessageToParent('hello main thread!')
  */
 const sendMessageToParent = <T extends AcceptableDataType>(data: T | SharedMemoryTransferObject) => {
     if (isMainThread) {
@@ -23,6 +25,8 @@ const sendMessageToParent = <T extends AcceptableDataType>(data: T | SharedMemor
 /**
  *
  * @param callback Function to run any time a message is received from the parent thread.
+ * 
+ * @example workerTools.onParentMessage((data) => console.log(data))
  */
 const onParentMessage = <T extends AcceptableDataType = AcceptableDataType>(callback: (data: T | SharedMemoryTransferObject) => void) => {
     if (isMainThread) {
@@ -34,6 +38,11 @@ const onParentMessage = <T extends AcceptableDataType = AcceptableDataType>(call
 
 /**
  * Immediately terminate the worker and return out with an `aborted` status.
+ * 
+ * @example
+ * workerTools.abort();
+ * workerTools.abort('API returned unexpected value');
+ * workerTools.abort(2);
  */
 const abort = (message?: string | number) => {
     if (isMainThread) {
@@ -54,8 +63,10 @@ const abort = (message?: string | number) => {
  * Prevent workers from hanging or running too long by aborting out after a certain amount of time has passed.
  *
  * @param seconds Number of seconds to let the worker continue running before aborting.
+ * 
+ * @example workerTools.abortOnTimeout({ seconds: 120, message: 'Operation took too long' })
  */
-const abortOnTimeout = ({ seconds, message }: { seconds: number; message: string | number }) => {
+const abortOnTimeout = ({ seconds, message }: { seconds: number; message?: string | number }) => {
     if (isMainThread) {
         throw new MyError(ERROR_CONFIG('Attempting to abortOnTimeout on the main thread. Not allowed.'));
     }
@@ -63,11 +74,29 @@ const abortOnTimeout = ({ seconds, message }: { seconds: number; message: string
     setTimeout(() => abort(message), seconds * 1e3);
 };
 
+/**
+ * Grab the unique ID of the thread currently being used.
+ * 
+ * @example
+ * const myValue = `${data}-${threadID}`
+ */
+const threadID = () => {
+    if (isMainThread) {
+        throw new MyError(ERROR_CONFIG('Attempting to grab the threadID on the main thread. Not allowed.'));
+    }
+
+    return threadIdValue;
+};
+
+/**
+ * Various tools which can be used within declaration functions.
+ */
 const workerTools = {
     sendMessageToParent,
     onParentMessage,
     abort,
     abortOnTimeout,
+    threadID,
 };
 
 export { workerTools };

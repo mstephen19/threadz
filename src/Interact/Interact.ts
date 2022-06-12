@@ -12,7 +12,7 @@ import type { DeepUnPromisify } from './types';
 import type { AcceptableDataType } from '../SharedMemory';
 
 /**
- * Use this API to interact with a worker by sending and receiving messages back and forth.
+ * Use this API to interact with a worker returned by ThreadzAPI by sending and receiving messages back and forth.
  */
 export class Interact<T extends MappedWorkerFunction> {
     private priority: boolean;
@@ -21,7 +21,7 @@ export class Interact<T extends MappedWorkerFunction> {
     private onMessageCallbacks: ThreadzWorkerEvents<any, any>['message'][];
     private onFailureCallbacks: ThreadzWorkerEvents<any, any>['error'][];
     private onSuccessCallbacks: ThreadzWorkerEvents<DeepUnPromisify<ReturnType<T>>, any>['success'][];
-    private onAbortedCallbacks: ThreadzWorkerEvents['aborted'][];
+    private onAbortCallbacks: ThreadzWorkerEvents['aborted'][];
 
     private constructor(worker: T) {
         const { _name, _location, _options, _priority } = worker as ModifiedMappedWorkerFunction<T>;
@@ -37,13 +37,15 @@ export class Interact<T extends MappedWorkerFunction> {
         this.onMessageCallbacks = [];
         this.onFailureCallbacks = [];
         this.onSuccessCallbacks = [];
-        this.onAbortedCallbacks = [];
+        this.onAbortCallbacks = [];
     }
 
     /**
      *
      * @param worker Worker function from the `workers` property in a ThreadzAPI instance
      * @returns Interact API
+     * 
+     * @example Interact.with(declarations.workers.myFunc)
      */
     static with<A extends MappedWorkerFunction>(worker: A) {
         const { _name, _location, _options, _priority } = worker as ModifiedMappedWorkerFunction<A>;
@@ -61,6 +63,8 @@ export class Interact<T extends MappedWorkerFunction> {
 
     /**
      * Pass arguments to the worker function within this method.
+     * 
+     * @example interact.args('param1', 2, { hello: 'world' })
      */
     args(...args: Parameters<T>) {
         this.workerData.args = args;
@@ -69,6 +73,8 @@ export class Interact<T extends MappedWorkerFunction> {
 
     /**
      * Treat the worker as a priority. This means that it will be pushed to the front of the ThreadzPool queue instead of the back.
+     * 
+     * @example interact.isPriority()
      */
     isPriority() {
         this.priority = true;
@@ -77,9 +83,26 @@ export class Interact<T extends MappedWorkerFunction> {
 
     /**
      * Treat the worker as normal. You only need to use this method if you set `priority` to `true` in the original declaration.
+     * 
+     * @example interact.isNotPriority()
      */
-    notPriority() {
+    isNotPriority() {
         this.priority = false;
+        return this;
+    }
+
+    /**
+     * Set the options for the worker's run. Overrides any options defined within the original declaration.
+     *
+     * @param options Options to set.
+     * 
+     * @example
+     * interact.setOptions({
+     *     trackUnmanagedFds: false,
+     * })
+     */
+    setOptions(options: WorkerOptions) {
+        this.options = options;
         return this;
     }
 
@@ -116,10 +139,11 @@ export class Interact<T extends MappedWorkerFunction> {
     /**
      *
      * @param callback Function to run whenever the worker is aborted. A worker can only be aborted with the `workerTools.abort()` and `workerTools.abortOnTimeout()` functions.
+     * 
      */
-    onAborted(callback: ThreadzWorkerEvents['aborted']) {
+    onAbort(callback: ThreadzWorkerEvents['aborted']) {
         if (typeof callback === 'function') {
-            this.onAbortedCallbacks.push(callback);
+            this.onAbortCallbacks.push(callback);
         }
         return this;
     }
@@ -128,6 +152,8 @@ export class Interact<T extends MappedWorkerFunction> {
      * Run the worker and return it to be further interacted with while it is running.
      *
      * @returns ThreadzWorker
+     * 
+     * @example Interact.with(declarations.workers.myFunc).args('abc', 123).onMessage((data) => console.log(data)).go()
      */
     go() {
         if (!isMainThread) throw new MyError(ERROR_CONFIG("Can't run workers within workers!"));
@@ -137,7 +163,7 @@ export class Interact<T extends MappedWorkerFunction> {
         this.onMessageCallbacks.forEach((callback) => worker.on('message', callback));
         this.onFailureCallbacks.forEach((callback) => worker.on('error', callback));
         this.onSuccessCallbacks.forEach((callback) => worker.on('success', callback));
-        this.onAbortedCallbacks.forEach((callback) => worker.on('aborted', callback));
+        this.onAbortCallbacks.forEach((callback) => worker.on('aborted', callback));
 
         ThreadzWorkerPool.enqueue(worker);
 
