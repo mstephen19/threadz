@@ -8,12 +8,12 @@ import type { Declarations } from './types';
 /**
  *
  * Declare your workers within this function, and make its return value the default export of the current file.
- * 
+ *
  * @param declarations Declarations
  * @returns ThreadzAPI
- * 
+ *
  * **NOTE:** The return value of the declaration function _MUST_ be the default export of the file!
- * 
+ *
  * @example export default declare({ add5: { worker: (x) => x + 5 } })
  *
  */

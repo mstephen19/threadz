@@ -6,7 +6,7 @@ import { ThreadzWorker } from '../ThreadzWorker';
 import type { MaxConcurrencyOptionsType } from './types';
 
 /**
- * The API used by Threadz to manage all ThreadzWorker instances.
+ * The API used by Threadz to manage all ThreadzWorker instances. Only one instance of the ThreadzWorkerPool is created.
  */
 export class ThreadzWorkerPool {
     private active: number;

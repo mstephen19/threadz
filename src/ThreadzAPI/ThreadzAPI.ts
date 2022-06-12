@@ -1,11 +1,13 @@
 import { TypedEmitter } from 'tiny-typed-emitter';
+import { isMainThread } from 'worker_threads';
 import { ThreadzWorker } from '../ThreadzWorker';
 import ThreadzWorkerPool from '../ThreadzWorkerPool';
+import { MyError } from '../Errors';
+import { ERROR_CONFIG } from './consts';
+import { Interact } from '../Interact';
 
 import type { Declarations, WorkerOptions } from '../declare/types';
 import type { ThreadzAPIConstructorOptions, ThreadzAPIEvents, MappedWorkers } from './types';
-import { MyError } from '../Errors';
-import { ERROR_CONFIG } from './consts';
 
 export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmitter<ThreadzAPIEvents> {
     /**
@@ -33,6 +35,7 @@ export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmit
         // function under that name.
         const entries = Object.entries(declarations).map(([name, declaration]) => {
             const run = (...args: any[]) => {
+                if (!isMainThread) throw new MyError(ERROR_CONFIG("Can't run workers within workers!"));
                 return this.#queueWorker({ name, args, options: declaration?.options || {}, priority: declaration?.priority || false });
             };
 
@@ -51,6 +54,24 @@ export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmit
         Object.freeze(workers);
 
         this.workers = workers;
+    }
+
+    /**
+     * Get the total number of declarations on this ThreadzAPI instance.
+     */
+    get declarationCount() {
+        return Object.values(this.declarations).length;
+    }
+
+    /**
+     *
+     */
+    get threadzPool() {
+        return ThreadzWorkerPool;
+    }
+
+    interactWith<K extends keyof T>(name: K) {
+        return Interact.with(this.workers[name]);
     }
 
     #queueWorker<A>({ name, args, options, priority }: { name: string; args: any[]; options: WorkerOptions; priority: boolean }): Promise<A> {
@@ -78,10 +99,4 @@ export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmit
             });
         });
     }
-
-    get declarationsCount() {
-        return Object.values(this.declarations).length;
-    }
-
-    interactWith<K extends keyof T>(name: K) {}
 }

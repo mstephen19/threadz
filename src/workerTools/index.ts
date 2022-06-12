@@ -35,7 +35,7 @@ const onParentMessage = <T extends AcceptableDataType = AcceptableDataType>(call
 /**
  * Immediately terminate the worker and return out with an `aborted` status.
  */
-const abort = () => {
+const abort = (message?: string | number) => {
     if (isMainThread) {
         throw new MyError(ERROR_CONFIG('Attempting to abort on the main thread. Not allowed.'));
     }
@@ -43,7 +43,7 @@ const abort = () => {
     const payload: WorkerMessagePayload = {
         done: true,
         aborted: true,
-        data: `Worker manually aborted at ${new Date().toISOString()}`,
+        data: message ?? `Worker manually aborted at ${new Date().toISOString()}`,
     };
 
     parentPort.postMessage(payload);
@@ -55,12 +55,12 @@ const abort = () => {
  *
  * @param seconds Number of seconds to let the worker continue running before aborting.
  */
-const abortOnTimeout = (seconds: number) => {
+const abortOnTimeout = ({ seconds, message }: { seconds: number; message: string | number }) => {
     if (isMainThread) {
         throw new MyError(ERROR_CONFIG('Attempting to abortOnTimeout on the main thread. Not allowed.'));
     }
 
-    setTimeout(abort, seconds * 1e3);
+    setTimeout(() => abort(message), seconds * 1e3);
 };
 
 const workerTools = {

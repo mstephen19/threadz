@@ -1,3 +1,4 @@
+import { isMainThread } from 'worker_threads';
 import { ThreadzWorker } from '../ThreadzWorker';
 import { MyError } from '../Errors';
 import { ERROR_CONFIG } from './consts';
@@ -8,7 +9,7 @@ import type { WorkerData } from '../worker/types';
 import type { MappedWorkerFunction, ModifiedMappedWorkerFunction } from '../ThreadzAPI/types';
 import type { ThreadzWorkerEvents } from '../ThreadzWorker/types';
 import type { DeepUnPromisify } from './types';
-import { AcceptableDataType } from '../SharedMemory';
+import type { AcceptableDataType } from '../SharedMemory';
 
 /**
  * Use this API to interact with a worker by sending and receiving messages back and forth.
@@ -20,6 +21,7 @@ export class Interact<T extends MappedWorkerFunction> {
     private onMessageCallbacks: ThreadzWorkerEvents<any, any>['message'][];
     private onFailureCallbacks: ThreadzWorkerEvents<any, any>['error'][];
     private onSuccessCallbacks: ThreadzWorkerEvents<DeepUnPromisify<ReturnType<T>>, any>['success'][];
+    private onAbortedCallbacks: ThreadzWorkerEvents['aborted'][];
 
     private constructor(worker: T) {
         const { _name, _location, _options, _priority } = worker as ModifiedMappedWorkerFunction<T>;
@@ -35,6 +37,7 @@ export class Interact<T extends MappedWorkerFunction> {
         this.onMessageCallbacks = [];
         this.onFailureCallbacks = [];
         this.onSuccessCallbacks = [];
+        this.onAbortedCallbacks = [];
     }
 
     /**
@@ -111,16 +114,30 @@ export class Interact<T extends MappedWorkerFunction> {
     }
 
     /**
+     *
+     * @param callback Function to run whenever the worker is aborted. A worker can only be aborted with the `workerTools.abort()` and `workerTools.abortOnTimeout()` functions.
+     */
+    onAborted(callback: ThreadzWorkerEvents['aborted']) {
+        if (typeof callback === 'function') {
+            this.onAbortedCallbacks.push(callback);
+        }
+        return this;
+    }
+
+    /**
      * Run the worker and return it to be further interacted with while it is running.
      *
      * @returns ThreadzWorker
      */
     go() {
+        if (!isMainThread) throw new MyError(ERROR_CONFIG("Can't run workers within workers!"));
+
         const worker = new ThreadzWorker<T>({ priority: this.priority, workerData: this.workerData, options: this.options });
 
         this.onMessageCallbacks.forEach((callback) => worker.on('message', callback));
         this.onFailureCallbacks.forEach((callback) => worker.on('error', callback));
         this.onSuccessCallbacks.forEach((callback) => worker.on('success', callback));
+        this.onAbortedCallbacks.forEach((callback) => worker.on('aborted', callback));
 
         ThreadzWorkerPool.enqueue(worker);
 
