@@ -5,8 +5,10 @@ import { Interact } from './Interact';
 import { workerTools } from './workerTools';
 import { MaxConcurrencyOptions } from './ThreadzWorkerPool/consts';
 
+import type { SharedMemoryTransferObject } from './SharedMemory';
+
 // APIs
 export { Interact, declare, merge, SharedMemory, ThreadzWorkerPool as ThreadzPool, workerTools };
 
-// Types
-export { MaxConcurrencyOptions };
+// Types & Enums
+export { MaxConcurrencyOptions, SharedMemoryTransferObject };
