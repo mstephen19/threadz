@@ -1,5 +1,3 @@
-import { Options } from '../runWorker/types';
+export type UnPromisify<T> = T extends Promise<infer U> ? U : T;
 
-export type OnWorkerMessageCallback<T = unknown> = (data: T) => any
-
-export type APIFunction = Function & { _name: string, _options: Options, _path: string }
+export type DeepUnPromisify<T> = UnPromisify<UnPromisify<UnPromisify<UnPromisify<T>>>>;

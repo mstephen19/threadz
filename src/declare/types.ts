@@ -1,58 +1,62 @@
-import { Options } from '../runWorker/types';
-import SharedMemory from '../SharedMemory';
+import type { ResourceLimits, TransferListItem } from 'worker_threads';
 
 export type DeclarationFunction = { (...args: any[]): unknown | Promise<unknown> };
 
-export type OnParentMessageFunction<T = any, A = any> = (data: T, memory?: SharedMemory<A>) => void | Promise<void>;
-
-export interface DeclarationProperty {
+export type Declaration = {
     /**
-     * Provide the function to be used within the worker.
+     * The function to run on the worker thread. **Can be async**!
      */
     worker: DeclarationFunction;
     /**
-     * The function to run when a message is received from the parent.
+     * Whether or not this worker should be pushed to the front of the ThreadzWorkerPool queue each time it's called.
      */
-    onParentMessage?: OnParentMessageFunction;
+    priority?: boolean;
     /**
-     * Extra options to pass to the worker. See [here](https://nodejs.org/api/worker_threads.html#workerresourcelimits) for more details.
+     * Default options for the Worker class. See the [Node.js documentation](https://nodejs.org/api/worker_threads.html#new-workerfilename-options) for a full rundown.
      */
-    options?: Options;
-}
-
-export interface DeclarationsInterface {
-    [key: string]: DeclarationProperty;
-}
-
-interface _Threadz {
-    /**
-     * The maximum number of workers that can be run simultaneously.
-     */
-    maxWorkers: () => number;
-    /**
-     * Get the current number of currently active workers.
-     */
-    activeWorkers: () => number;
-    /**
-     * A reference to your original declarations.
-     */
-    declarations: DeclarationsInterface;
-    /**
-     * The location at which the declarations file lives.
-     */
-    location: string;
-    /**
-     * All of your onParentMessage callbacks.
-     */
-    onParentMessageCallbacks: {
-        [key: string]: OnParentMessageFunction;
-    };
-}
-
-type ThreadzFunction<T extends DeclarationFunction> = {
-    (...args: Parameters<T>): Promise<ReturnType<T>>;
+    options?: WorkerOptions;
 };
 
-export type ThreadzAPI<T extends DeclarationsInterface> = {
-    [K in keyof T]: ThreadzFunction<T[K]['worker']>;
-} & { _threadz: _Threadz };
+export type WorkerOptions = {
+    /**
+     * List of arguments which would be stringified and appended to `process.argv` in the worker. This is mostly similar to the `workerData` but the values are available on the global `process.argv` as if they were passed as CLI options to the script.
+     */
+    argv?: any[];
+    /**
+     * List of node CLI options passed to the worker. V8 options (such as `--max-old-space-size`) and options that affect the process (such as `--title`) are not supported. If set, this is provided as [`process.execArgv`](https://nodejs.org/api/process.html#processexecargv) inside the worker. By default, options are inherited from the parent thread.
+     */
+    execArgv?: string[];
+    /**
+     * If this is set to `true`, then `worker.stdin` provides a writable stream whose contents appear as `process.stdin` inside the Worker. By default, no data is provided.
+     */
+    stdin?: boolean;
+    /**
+     * If this is set to `true`, then `worker.stdout` is not automatically piped through to `process.stdout` in the parent.
+     */
+    stdout?: boolean;
+    /**
+     * If this is set to true, then `worker.stderr` is not automatically piped through to `process.stderr` in the parent.
+     */
+    stderr?: boolean;
+    /**
+     * If this is set to `true`, then the Worker tracks raw file descriptors managed through [`fs.open()`](https://nodejs.org/api/fs.html#fsopenpath-flags-mode-callback) and [`fs.close()`](https://nodejs.org/api/fs.html#fsclosefd-callback), and closes them when the Worker exits, similar to other resources like network sockets or file descriptors managed through the [`FileHandle`](https://nodejs.org/api/fs.html#class-filehandle) API. This option is automatically inherited by all nested Workers.
+     *
+     * **Default:** `true`.
+     */
+    trackUnmanagedFds?: boolean;
+    /**
+     * If one or more `MessagePort`-like objects are passed in workerData, a `transferList` is required for those items or [`ERR_MISSING_MESSAGE_PORT_IN_TRANSFER_LIST`](https://nodejs.org/api/errors.html#err_missing_message_port_in_transfer_list) is thrown. See [`port.postMessage()`](https://nodejs.org/api/worker_threads.html#portpostmessagevalue-transferlist) for more information.
+     */
+    transferList?: TransferListItem[];
+    /**
+     * An optional set of resource limits for the new JS engine instance. Reaching these limits leads to termination of the Worker instance. These limits only affect the JS engine, and no external data, including no [`ArrayBuffers`]. Even if these limits are set, the process may still abort if it encounters a global out-of-memory situation.
+     */
+    resourceLimits?: ResourceLimits;
+};
+
+/**
+ * Pass a DeclarationsInput object into the `declare` function to create a set of declarations.
+ */
+export type Declarations = {
+    [key: string]: Declaration;
+};

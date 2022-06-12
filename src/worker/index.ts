@@ -1,44 +1,32 @@
 import { parentPort, workerData } from 'worker_threads';
-import { DeclarationsInterface, ThreadzAPI } from '../declare/types';
-import SharedMemory from '../SharedMemory';
-import type { WorkerArgs, MemoryArgument } from './types';
+import { SUCCESS_PAYLOAD, ERROR_PAYLOAD } from './consts';
 
-const run = async () => {
-    const { name, args, declarationsPath }: WorkerArgs = workerData;
+import type { WorkerData } from './types';
+import type { ThreadzAPI } from '../ThreadzAPI';
+import type { Declarations } from '../declare/types';
 
+const main = async () => {
     try {
-        // Import the functions declared
-        const {
-            _threadz: { declarations, onParentMessageCallbacks },
-        } = (await import(declarationsPath)).default as ThreadzAPI<DeclarationsInterface>;
+        const { name, location, args } = workerData as WorkerData;
 
-        // Find the first SharedMemory instance and set the variable to it
-        let sharedMemory = undefined;
-        const memoryArg = args.findIndex((item: any) => !!item?._isSharedMemory);
-        if (memoryArg !== -1) sharedMemory = SharedMemory.from((args[memoryArg] as MemoryArgument)._isSharedMemory);
+        const api = (await import(location)).default as ThreadzAPI<Declarations>;
 
-        // Map through the arguments. If any are shared memory, replace it with with a SharedMemory instance
-        const newArgs = args.map((item: any) => {
-            if (!!item?._isSharedMemory) return SharedMemory.from((item as MemoryArgument)._isSharedMemory);
-            return item;
-        });
-
-        if (onParentMessageCallbacks?.[name]) {
-            parentPort.on('message', (data) => onParentMessageCallbacks?.[name](data, sharedMemory));
+        if (!api || !api?.declarations) {
+            throw new Error("Make sure you've made your declarations the default export of the file they're in.");
         }
 
-        const data = await declarations[name]?.worker(...newArgs);
+        if (!api.declarations?.[name]) {
+            throw new Error('There is no worker by this name in the specified declarations file.');
+        }
 
-        parentPort.postMessage({ success: true, error: null, data });
+        const result = await api?.declarations?.[name]?.worker(...args);
+
+        parentPort.postMessage(SUCCESS_PAYLOAD(result));
     } catch (error) {
-        parentPort.postMessage({
-            success: false,
-            error,
-            data: null,
-        });
+        parentPort.postMessage(ERROR_PAYLOAD((error as Error)?.message));
     } finally {
         process.exit(0);
     }
 };
 
-run();
+main();

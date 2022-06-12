@@ -1,9 +1,7 @@
-import declare from './declare';
-import { setMaxWorkers } from './WorkerPool';
-import Interact from './Interact';
 import SharedMemory from './SharedMemory';
-import { toolBox } from './toolBox';
+import { declare, merge } from './declare';
+import ThreadzWorkerPool from './ThreadzWorkerPool';
+import { Interact } from './Interact';
+import { workerTools } from './workerTools';
 
-const ABORTED = 'ABORTED';
-
-export { declare, setMaxWorkers, toolBox, Interact, SharedMemory, ABORTED };
+export { Interact, declare, merge, SharedMemory, ThreadzWorkerPool as ThreadzPool, workerTools };

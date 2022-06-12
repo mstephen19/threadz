@@ -1,3 +1,3 @@
 import { ThreadzWorker } from './ThreadzWorker';
 
-export default ThreadzWorker;
+export { ThreadzWorker };

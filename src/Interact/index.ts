@@ -1,3 +1,3 @@
-import Interact from './Interact';
+import { Interact } from './Interact';
 
-export default Interact
+export { Interact };

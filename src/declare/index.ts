@@ -1,3 +1,4 @@
 import { declare } from './declare';
+import { merge } from './merge';
 
-export default declare;
+export { declare, merge };

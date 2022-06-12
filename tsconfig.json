@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "skipLibCheck": true,
-        "sourceMap": true,
+        "sourceMap": false,
         "declaration": true,
         "incremental": false,
         "target": "esnext",
@@ -16,7 +16,6 @@
         "outDir": "dist/",
         "esModuleInterop": true,
         "useDefineForClassFields": true,
-        "declarationDir": "dist/types"
     },
     "include": ["src/"],
     "exclude": ["node_modules"]

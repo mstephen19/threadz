@@ -1,10 +1,14 @@
-export interface WorkerArgs {
+export type WorkerData = {
     name: string;
+    location: string;
     args: unknown[];
-    declarationsPath: string;
-    memory: Uint8Array;
-}
+};
 
-export interface MemoryArgument {
-    _isSharedMemory: Uint8Array;
-}
+export type WorkerMessagePayload<T = unknown> = {
+    done: boolean;
+    success?: boolean;
+    aborted?: boolean;
+    error?: string;
+    data?: T;
+    messageData?: T;
+};

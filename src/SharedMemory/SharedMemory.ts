@@ -1,120 +1,153 @@
-// import { TypedEmitter } from 'tiny-typed-emitter';
-import { TextEncoder, TextDecoder } from 'util';
-import { ThreadzError } from '../utils';
-import { MemoryArgument } from '../worker/types';
-import { atomicStore, decodeUint8Array, encodeText, parseJSON, stringifyJSON } from './utils';
+import { MyError } from '../Errors';
+import { decodeBytes, encodeBytes, isSharedMemoryTransferObject, megabytesToBytes, wipeUsedBytes, wipeUsedBytesAndSet } from './utils';
+import { ERROR_CONFIG } from './consts';
 
-// interface SharedMemoryEvents {
-//     change: <T>(data: any) => T | void;
-// }
+import type { AcceptableDataType, SharedMemoryTransferObject, FromArgumentType, FromOptions } from './types';
 
 /**
- * Share memory between two threads. The "shared" property can safely be passed into a worker function as an argument.
+ * Use this API to allocate a certain amount of memory to be shared between different threads.
  */
-export default class SharedMemory<T = unknown> {
-    shared: Uint8Array;
+export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
+    private byteArray: Uint8Array;
 
-    private constructor(initialState: Uint8Array | T, sizeMb?: number) {
-        try {
-            if (!initialState) throw new ThreadzError('must provide an initial state!');
-
-            // If they created their own Uint8Array for the initial state, just set this.shared to be that
-            if (initialState instanceof Uint8Array) {
-                this.shared = initialState;
-                return;
-            }
-
-            // Otherwise, create a new Uint8Array from a SharedArrayBuffer and use that
-            const shared = new SharedArrayBuffer(sizeMb ? Math.floor(sizeMb * 1e6) : 1e6);
-            this.shared = new Uint8Array(shared);
-
-            // Then, serialize the initial state
-            this.setSync(initialState);
-        } catch (err) {
-            throw new ThreadzError('failed when creating shared memory: ' + (err as Error).message);
-        }
+    private constructor(state: Uint8Array) {
+        this.byteArray = state;
     }
 
     /**
-     * Create a new SharedMemory instance from either a Uint8Array or an JSON serializable item.
+     * Pass in a SharedMemory instance, a SharedMemoryTransferObject, or an AcceptableDataType (with options).
+     *
+     * @returns SharedMemory instance.
      */
-    static from<A = unknown>(state: Uint8Array | A, sizeMb?: number): SharedMemory<A> {
-        if (!state) return undefined;
+    static from<T extends SharedMemory>(instance: T): T;
+    static from<T extends AcceptableDataType>(transferObject: SharedMemoryTransferObject): SharedMemory<T>;
+    static from<T extends AcceptableDataType>(state: T, { sizeMb }?: FromOptions): SharedMemory<T>;
+    static from<T extends FromArgumentType>(state: T, { sizeMb }: FromOptions = { sizeMb: 0.001 }) {
+        // Don't allow undefined values
+        if (state === undefined) return;
 
+        // In the case that someone tries to pass a SharedMemory instance to
+        // this function, just return that SharedMemory instance
         if (state instanceof SharedMemory) return state;
 
-        //@ts-ignore
-        if (!!state?._isSharedMemory) return new SharedMemory(state._isSharedMemory);
+        // If the object passed in has this key, that means it's a
+        if (isSharedMemoryTransferObject(state)) return new SharedMemory(state._sharedMemoryByteArray);
 
-        return new SharedMemory<A>(state, sizeMb);
+        try {
+            // Otherwise, the state is one of the acceptable data types and we have to
+            // create a new SharedArrayBuffer + Uint8Array
+            const shared = new SharedArrayBuffer(megabytesToBytes(sizeMb));
+            const byteArray = new Uint8Array(shared);
+
+            encodeBytes(state, byteArray);
+
+            return new SharedMemory(byteArray);
+        } catch (error) {
+            throw new MyError(ERROR_CONFIG(`failed to encode data: ${(error as Error)?.message}`));
+        }
+    }
+
+    get byteLength() {
+        return this.byteArray.byteLength;
     }
 
     /**
-     * Asynchronously get the current state.
+     *
+     * @returns An basic object that can be easily passed around.
      */
-    async get(): Promise<T> {
-        try {
-            const decoded = await decodeUint8Array(this.shared);
+    transfer(): SharedMemoryTransferObject {
+        const transferObject = { _sharedMemoryByteArray: this.byteArray };
+        Object.freeze(transferObject);
+        return transferObject;
+    }
 
-            const parsed = await parseJSON<T>(decoded);
-            return parsed;
-        } catch (err) {
-            throw new ThreadzError('failed when grabbing shared memory: ' + (err as Error).message);
+    /**
+     *
+     * @returns Value currently stored in the memory space.
+     */
+    get(): T;
+    get(microtask: true): Promise<T>;
+    get(microtask?: boolean) {
+        // Run as a microtask.
+        if (microtask) {
+            return Promise.resolve()
+                .then(() => decodeBytes<T>(this.byteArray))
+                .catch((error) => {
+                    throw new MyError(ERROR_CONFIG(`failed to decode data: ${(error as Error)?.message}`));
+                });
+        }
+
+        // Run normally.
+        try {
+            const decoded = decodeBytes<T>(this.byteArray);
+            return decoded;
+        } catch (error) {
+            throw new MyError(ERROR_CONFIG(`failed to decode data: ${(error as Error)?.message}`));
         }
     }
 
     /**
-     * Asynchronously set the state.
+     * Entirely reset the memory space (not deletion!).
      */
-    async set(newState: T, { wipe }: { wipe: boolean } = { wipe: false }) {
+    wipe(): void;
+    wipe(microtask: true): Promise<void>;
+    wipe(microtask?: boolean) {
+        // Run as a microtask.
+        if (microtask) {
+            return Promise.resolve()
+                .then(() => wipeUsedBytes(this.byteArray))
+                .catch((error) => {
+                    throw new MyError(ERROR_CONFIG(`failed to wipe: ${(error as Error)?.message}`));
+                });
+        }
+
+        // Run normally.
         try {
-            const stringified = await stringifyJSON(newState);
-            const encoded = await encodeText(stringified);
-
-            if (wipe) {
-                const wipers = [...this.shared].map((_, i) => atomicStore(this.shared, i, 0));
-                await Promise.all(wipers);
-            }
-
-            const promises = [...encoded].map((_, i) => atomicStore(this.shared, i, encoded[i]));
-
-            await Promise.all(promises);
-        } catch (err) {
-            throw new ThreadzError('failed when setting shared memory: ' + (err as Error).message);
+            wipeUsedBytes(this.byteArray);
+        } catch (error) {
+            throw new MyError(ERROR_CONFIG(`failed to wipe: ${(error as Error)?.message}`));
         }
     }
 
     /**
-     * Synchronously get the current state.
+     * Set a new value for the current memory space.
      */
-    getSync(): T {
+    set<A extends T>(data: A): void;
+    set<A extends T>(data: A, microtask: true): Promise<void>;
+    set<A extends T>(data: A, microtask?: boolean) {
+        // Run as a microtask.
+        if (microtask) {
+            return Promise.resolve()
+                .then(() => wipeUsedBytesAndSet(data, this.byteArray))
+                .catch((error) => {
+                    throw new MyError(ERROR_CONFIG(`failed to set new value: ${(error as Error)?.message}`));
+                });
+        }
+
+        // Run normally.
         try {
-            const decoded = new TextDecoder().decode(this.shared);
-            const parsed = JSON.parse(decoded.trim().replace(/\0/g, ''));
-            return parsed;
-        } catch (err) {
-            throw new ThreadzError('failed when grabbing shared memory: ' + (err as Error).message);
+            wipeUsedBytesAndSet(data, this.byteArray);
+        } catch (error) {
+            throw new MyError(ERROR_CONFIG(`failed to set new value: ${(error as Error)?.message}`));
         }
     }
 
     /**
-     * Synchronously set the state.
+     *
+     * @param callback A callback function taking in the previous data and returning the new data to be written to memory.
      */
-    setSync(newState: T, { wipe }: { wipe: boolean } = { wipe: false }) {
+    setWith<A extends T>(callback: (data: T) => A) {
         try {
-            const encoded = new TextEncoder().encode(JSON.stringify(newState));
+            // Grab the previous state
+            const prev = decodeBytes<T>(this.byteArray);
 
-            if (wipe) {
-                this.shared.forEach((_, i) => Atomics.store(this.shared, i, 0));
-            }
+            // Run the callback
+            const state = callback(prev);
 
-            encoded.forEach((num, i) => Atomics.store(this.shared, i, num));
-        } catch (err) {
-            throw new ThreadzError('failed when setting shared memory: ' + (err as Error).message);
+            // Set the new state
+            encodeBytes(state, this.byteArray);
+        } catch (error) {
+            throw new MyError(ERROR_CONFIG(`failed when setting state with previous: ${(error as Error)?.message}`));
         }
-    }
-
-    pass() {
-        return { _isSharedMemory: this.shared } as unknown as SharedMemory<T>;
     }
 }

@@ -1,43 +1,38 @@
-import callerCallsite from 'caller-callsite';
-import runWorker from '../runWorker';
-import WorkerPool from '../WorkerPool';
-import { ThreadzError } from '../utils';
+import caller from 'caller-callsite';
+import { MyError } from '../Errors';
+import { ThreadzAPI } from '../ThreadzAPI';
+import { ERROR_CONFIG } from './consts';
 
-import type { DeclarationsInterface, ThreadzAPI } from './types';
+import type { Declarations } from './types';
 
 /**
- * Define and configure your workers within this function. Must be the default export.
+ *
+ * Declare your workers within this function, and make its return value the default export of the current file.
+ * 
+ * @param declarations Declarations
+ * @returns ThreadzAPI
+ * 
+ * **NOTE:** The return value of the declaration function _MUST_ be the default export of the file!
+ * 
+ * @example export default declare({ add5: { worker: (x) => x + 5 } })
+ *
  */
-export const declare = <T extends DeclarationsInterface>(declarations: T) => {
-    const location = callerCallsite().getFileName();
+export const declare = <T extends Declarations>(declarations: T) => {
+    // If declarations are undefined, an array, or not an object
+    const isNotObject = !declarations || Array.isArray(declarations) || typeof declarations !== 'object';
 
-    const workers = Object.fromEntries(
-        Object.keys(declarations).map((key) => {
-            if (key === '_threadz') throw new ThreadzError('can\'t use "_threadz" as a key');
-            const func = (...args: any[]) => runWorker(key, location, args, declarations[key]?.options);
-            func._name = key;
-            func._options = declarations[key]?.options;
-            func._path = location;
-            return [key, func];
-        })
-    );
+    if (isNotObject) throw new MyError(ERROR_CONFIG('Declarations must be defined, and must be an object.'));
 
-    const maxWorkers = () => WorkerPool.max;
+    const values = Object.values(declarations);
 
-    const activeWorkers = () => WorkerPool.active;
+    const isNotValidDeclarations = values.some((declaration) => !declaration?.worker || typeof declaration.worker !== 'function') || !values.length;
 
-    const onParentMessageCallbacks = Object.fromEntries(
-        Object.keys(declarations)
-            .filter((key) => !!declarations[key]?.onParentMessage)
-            .map((key) => {
-                const func = declarations[key]?.onParentMessage;
+    // If any declarations don't have a "worker" key, or the "worker" isn't a function
+    if (isNotValidDeclarations) {
+        throw new MyError(ERROR_CONFIG('Each declaration must have a "worker" property which is a function.'));
+    }
 
-                return [key, func];
-            })
-    );
+    const location = caller().getFileName();
 
-    return {
-        ...workers,
-        _threadz: { declarations, maxWorkers, activeWorkers, location, onParentMessageCallbacks },
-    } as unknown as ThreadzAPI<T>;
+    return new ThreadzAPI({ location, declarations });
 };

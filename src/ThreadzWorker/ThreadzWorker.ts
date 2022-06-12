@@ -1,94 +1,78 @@
 import { Worker, SHARE_ENV } from 'worker_threads';
-import path from 'path';
 import { TypedEmitter } from 'tiny-typed-emitter';
-import type { GoArguments, Options } from '../runWorker/types';
-import type { WorkerResponse } from './types';
-import { ThreadzError } from '../utils';
-import { OnWorkerMessageCallback } from '../Interact/types';
+import path from 'path';
+import { MyError } from '../Errors';
+import { ERROR_CONFIG } from './consts';
 
-interface WorkerEvents {
-    success: <T = unknown>(data: T) => void | Promise<void>;
-    error: (error: Error) => void | Promise<void>;
-    message: <T = unknown>(data: T) => void | Promise<void>;
-}
+import type { WorkerData, WorkerMessagePayload } from '../worker/types';
+import type { WorkerOptions } from '../declare/types';
+import type { ThreadzWorkerEvents } from './types';
+import type { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory';
+import type { MappedWorkerFunction } from '../ThreadzAPI/types';
+import type { DeepUnPromisify } from '../Interact/types';
 
 /**
- * Works similar to a regular worker, but doesn't run immediately.
+ * A Threadz-specific wrapper for the default `Worker` class from the Node.js `worker_threadz` module
  */
-export class ThreadzWorker extends TypedEmitter<WorkerEvents> {
-    private config: GoArguments;
-    private options: Options;
+export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction> extends TypedEmitter<
+    ThreadzWorkerEvents<DeepUnPromisify<ReturnType<T>>>
+> {
+    readonly options: WorkerOptions;
+    readonly workerData: WorkerData;
+    priority: boolean;
+    protected isRunning: boolean;
     private worker: Worker;
-    private wasRun: boolean;
-    private callback: OnWorkerMessageCallback;
 
-    constructor(config: GoArguments, options: Options, callback?: OnWorkerMessageCallback) {
+    constructor({ priority, options, workerData }: { priority: boolean; options: WorkerOptions; workerData: WorkerData }) {
         super();
 
-        this.wasRun = false;
-        this.config = config;
+        this.priority = priority;
         this.options = options;
-        this.callback = callback;
+        this.workerData = workerData;
     }
 
-    /**
-     * Don't use this function unless you know what you're doing.
-     */
-    run() {
-        if (this.wasRun) throw new ThreadzError('this worker was already run!');
-        this.wasRun = true;
+    go() {
         const worker = new Worker(path.join(__dirname, '../worker/index.js'), {
             ...this.options,
-            workerData: { ...this.config },
+            workerData: this.workerData,
             env: SHARE_ENV,
         });
 
+        this.isRunning = true;
         this.worker = worker;
 
-        // The worker is itself configured to never throw. It always sends a message object
-        worker.on('message', ({ success, error, data, message }: WorkerResponse) => {
-            if (message && this?.callback) {
-                this.emit('message', message);
-                return this.callback(message);
-            }
+        worker.on('message', (payload: WorkerMessagePayload) => {
+            const { done, success, error, messageData, data, aborted } = payload;
 
-            if (message) return;
+            if (messageData) return this.emit('message', messageData);
 
-            if (!success) this.emit('error', error);
-            else this.emit('success', data);
+            if (done && success) this.emit('success', data as DeepUnPromisify<ReturnType<T>>);
 
+            if (done && aborted) this.emit('aborted', data as string);
+
+            if (done && error) this.emit('error', new MyError(ERROR_CONFIG(`Failed within worker: ${error}`)));
+
+            this.isRunning = false;
             worker.terminate();
         });
     }
 
-    /**
-     * Send a message to the worker thread.
-     */
-    sendMessage<T>(data: T) {
+    setPriority(priority: boolean | 1 | 0) {
+        if (typeof priority !== 'boolean' && priority !== 1 && priority !== 0) return;
+        if (this.isRunning) return;
+
+        this.priority = !!priority;
+    }
+
+    sendMessage<T extends AcceptableDataType>(data: T | SharedMemoryTransferObject) {
         this.worker.postMessage(data);
     }
 
-    /**
-     * Handle messages from the worker.
-     */
-    onMessage<T>(callback: OnWorkerMessageCallback<T>) {
-        this.worker.on('message', ({ message }) => {
-            if (message) return callback(message);
-        });
-    }
-
-    /**
-     * Wait for the worker to complete. If it returned anything, it will be returned from this function.
-     */
-    waitFor<T = unknown>(): Promise<T> {
+    waitFor(): Promise<DeepUnPromisify<ReturnType<T>>> {
         return new Promise((resolve, reject) => {
-            this.on('success', (data) => {
-                resolve(data as unknown as T);
-            });
-
-            this.on('error', (err) => {
-                reject(new ThreadzError(`worker failed: ${err?.message}`));
-            });
+            this.on('success', (data) => resolve(data));
+            this.on('error', (error) => reject(error));
+            this.on('aborted', (message) => reject(new MyError(ERROR_CONFIG(`Worker aborted with message: ${message}`))));
         });
     }
 }
