@@ -1,12 +1,13 @@
 import { parentPort, isMainThread } from 'worker_threads';
 import { MyError } from '../Errors';
+import { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory';
 import type { WorkerMessagePayload } from '../worker/types';
 import { ERROR_CONFIG } from './consts';
 
 /**
  * Send a message to be consumed back on the main thread.
  */
-const sendMessageToParent = <T = unknown>(data: T) => {
+const sendMessageToParent = <T extends AcceptableDataType>(data: T | SharedMemoryTransferObject) => {
     if (isMainThread) {
         throw new MyError(ERROR_CONFIG('Attempting to use a workerTool on the main thread. Not allowed.'));
     }
@@ -23,7 +24,7 @@ const sendMessageToParent = <T = unknown>(data: T) => {
  *
  * @param callback Function to run any time a message is received from the parent thread.
  */
-const onParentMessage = (callback: (data: unknown) => void) => {
+const onParentMessage = <T extends AcceptableDataType = AcceptableDataType>(callback: (data: T | SharedMemoryTransferObject) => void) => {
     if (isMainThread) {
         throw new MyError(ERROR_CONFIG('Attempting to use a workerTool on the main thread. Not allowed.'));
     }

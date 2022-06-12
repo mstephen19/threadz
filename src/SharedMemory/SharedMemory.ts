@@ -26,7 +26,9 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
      *
      */
     static from<T extends SharedMemory>(instance: T): T;
-    static from<T extends AcceptableDataType>(transferObject: SharedMemoryTransferObject): SharedMemory<T>;
+    static from<T extends SharedMemoryTransferObject>(
+        transferObject: T
+    ): SharedMemory<T extends SharedMemoryTransferObject<infer A> ? A : AcceptableDataType>;
     static from<T extends AcceptableDataType>(state: T, { sizeMb }?: FromOptions): SharedMemory<T>;
     static from<T extends FromArgumentType>(state: T, { sizeMb }: FromOptions = { sizeMb: 0.001 }) {
         // Don't allow undefined values
@@ -66,7 +68,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
      *
      * declarations.workers.myFunc(data.transfer());
      */
-    transfer(): SharedMemoryTransferObject {
+    transfer(): SharedMemoryTransferObject<T> {
         const transferObject = { _sharedMemoryByteArray: this.byteArray };
         Object.freeze(transferObject);
         return transferObject;
@@ -182,7 +184,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
             const state = callback(prev);
 
             // Set the new state
-            encodeBytes(state, this.byteArray);
+            wipeUsedBytesAndSet(state, this.byteArray);
         } catch (error) {
             throw new MyError(ERROR_CONFIG(`failed when setting state with previous: ${(error as Error)?.message}`));
         }

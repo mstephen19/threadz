@@ -1,5 +1,4 @@
 import { cpus } from 'os';
-import { isMainThread } from 'worker_threads';
 import { MyError } from '../Errors';
 import { ERROR_CONFIG, MaxConcurrencyOptions } from './consts';
 import { ThreadzWorker } from '../ThreadzWorker';
@@ -16,10 +15,6 @@ export class ThreadzWorkerPool {
     private queue: ThreadzWorker[];
 
     constructor() {
-        if (!isMainThread) {
-            throw new MyError(ERROR_CONFIG('Can only create one instance of ThreadzWorkerPool, which must be on the main thread.'));
-        }
-
         this.active = 0;
         this.cpus = cpus().length;
         this.max = this.cpus * 2;
@@ -39,9 +34,9 @@ export class ThreadzWorkerPool {
     }
 
     /**
-     * 
+     *
      * @param value A number or a `MaxConcurrencyOptions` value to limit the number of workers that can be run at a single time.
-     * 
+     *
      * **NOTE:** It is recommended to use `MaxConcurrencyOptions` values. Do not set this number to be ridiculously high. The maximum allowed is `numberOfMachineCpus * 50`, which is already ridiculous.
      */
     setMaxConcurrency<T extends MaxConcurrencyOptionsType>(value: T): void;

@@ -2,7 +2,7 @@ export type FromOptions = { sizeMb?: number };
 
 export type FromArgumentType = SharedMemoryTransferObject | AcceptableDataType | AcceptableObject;
 
-export type SharedMemoryTransferObject = {
+export type SharedMemoryTransferObject<T extends AcceptableDataType = AcceptableDataType> = {
     _sharedMemoryByteArray: Uint8Array;
 };
 
