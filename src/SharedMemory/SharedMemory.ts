@@ -18,6 +18,12 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
      * Pass in a SharedMemory instance, a SharedMemoryTransferObject, or an AcceptableDataType (with options).
      *
      * @returns SharedMemory instance.
+     *
+     * @example
+     * SharedMemory.from({ hello: 'world' }, { sizeMb: 0.5 });
+     * SharedMemory.from(SharedMemory.from('test'));
+     * SharedMemory.from(SharedMemory.from(123).transfer());
+     *
      */
     static from<T extends SharedMemory>(instance: T): T;
     static from<T extends AcceptableDataType>(transferObject: SharedMemoryTransferObject): SharedMemory<T>;
@@ -54,6 +60,11 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
     /**
      *
      * @returns An basic object that can be easily passed around.
+     *
+     * @example
+     * const data = SharedMemory.from({ hello: 'world' });
+     *
+     * declarations.workers.myFunc(data.transfer());
      */
     transfer(): SharedMemoryTransferObject {
         const transferObject = { _sharedMemoryByteArray: this.byteArray };
@@ -64,6 +75,12 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
     /**
      *
      * @returns Value currently stored in the memory space.
+     *
+     * Pass in `true` to run the operation as a microtask.
+     *
+     * @example
+     * const data = memory.get();
+     * const data = await memory.get(true);
      */
     get(): T;
     get(microtask: true): Promise<T>;
@@ -88,6 +105,12 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
 
     /**
      * Entirely reset the memory space (not deletion!).
+     *
+     * Pass in `true` to run the operation as a microtask.
+     *
+     * @example
+     * memory.wipe();
+     * await memory.wipe(true);
      */
     wipe(): void;
     wipe(microtask: true): Promise<void>;
@@ -111,6 +134,12 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
 
     /**
      * Set a new value for the current memory space.
+     *
+     * Pass `true` as the second parameter to run the operation as a microtask.
+     *
+     * @example
+     * memory.set('hi');
+     * await memory.set('hi', true);
      */
     set<A extends T>(data: A): void;
     set<A extends T>(data: A, microtask: true): Promise<void>;
@@ -135,6 +164,14 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
     /**
      *
      * @param callback A callback function taking in the previous data and returning the new data to be written to memory.
+     *
+     * @example
+     * memory.setWith((previous) => {
+     *    return {
+     *       ...previous,
+     *       newProperty: 'foo',
+     *    }
+     * });
      */
     setWith<A extends T>(callback: (data: T) => A) {
         try {

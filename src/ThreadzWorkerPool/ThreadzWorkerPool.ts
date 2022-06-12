@@ -6,6 +6,9 @@ import { ThreadzWorker } from '../ThreadzWorker';
 
 import type { MaxConcurrencyOptionsType } from './types';
 
+/**
+ * The API used by Threadz to manage all ThreadzWorker instances.
+ */
 export class ThreadzWorkerPool {
     private active: number;
     readonly cpus: number;
@@ -35,6 +38,12 @@ export class ThreadzWorkerPool {
         return this.max;
     }
 
+    /**
+     * 
+     * @param value A number or a `MaxConcurrencyOptions` value to limit the number of workers that can be run at a single time.
+     * 
+     * **NOTE:** It is recommended to use `MaxConcurrencyOptions` values. Do not set this number to be ridiculously high. The maximum allowed is `numberOfMachineCpus * 50`, which is already ridiculous.
+     */
     setMaxConcurrency<T extends MaxConcurrencyOptionsType>(value: T): void;
     setMaxConcurrency(value: number): void;
     setMaxConcurrency<T extends MaxConcurrencyOptionsType>(value: T | number) {
@@ -73,6 +82,9 @@ export class ThreadzWorkerPool {
         }
     }
 
+    /**
+     * Don't use this method unless you really know what you're doing.
+     */
     enqueue(input: ThreadzWorker) {
         // Handle incorrect input
         if (!input || !(input instanceof ThreadzWorker)) {
