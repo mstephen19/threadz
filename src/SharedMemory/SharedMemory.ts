@@ -25,11 +25,11 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
      * SharedMemory.from(SharedMemory.from(123).transfer());
      *
      */
+    static from<T extends AcceptableDataType>(state: T, { sizeMb }?: FromOptions): SharedMemory<T>;
     static from<T extends SharedMemory>(instance: T): T;
     static from<T extends SharedMemoryTransferObject>(
         transferObject: T
     ): SharedMemory<T extends SharedMemoryTransferObject<infer A> ? A : AcceptableDataType>;
-    static from<T extends AcceptableDataType>(state: T, { sizeMb }?: FromOptions): SharedMemory<T>;
     static from<T extends FromArgumentType>(state: T, { sizeMb }: FromOptions = { sizeMb: 0.001 }) {
         // Don't allow undefined values
         if (state === undefined) return;

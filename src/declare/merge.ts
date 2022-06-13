@@ -1,10 +1,10 @@
+import { MyError } from '../Errors';
 import { ThreadzAPI } from '../ThreadzAPI';
-import type { Declarations } from './types';
+import { ERROR_CONFIG } from './consts';
+import type { UnionToIntersection } from './types';
 
 type DeclarationType<T extends any> = T extends ThreadzAPI<infer D> ? D : never;
 type DeclarationsMap<T extends ThreadzAPI[]> = [...{ [K in keyof T]: DeclarationType<T[K]> }];
-
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 
 /**
  *  Merge the declarations of **n** number of ThreadsAPI instances. Returns a Declarations object to be re-declared.
@@ -21,6 +21,10 @@ type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
  * export default declare(merge([declarations1, declarations2]))
  */
 export function merge<T extends ThreadzAPI[]>(rest: [...{ [K in keyof T]: T[K] }]) {
+    if (rest.some((item) => !(item instanceof ThreadzAPI))) {
+        throw new MyError(ERROR_CONFIG('All items to be merged must be ThreadzAPI instances.'));
+    }
+
     const mergedDeclarations = rest.map((api) => api.declarations) as DeclarationsMap<T>;
     const merged = mergedDeclarations.reduce((acc, curr) => ({ ...acc, ...curr })) as UnionToIntersection<DeclarationsMap<T>[number]>;
 

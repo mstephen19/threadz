@@ -1,1 +1,3 @@
 # Threadz
+
+## License
