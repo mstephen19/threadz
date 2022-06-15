@@ -27,7 +27,10 @@ export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmit
         super();
 
         this.location = location;
-        this.declarations = declarations;
+
+        const shallowCloneDeclarations = { ...declarations };
+        Object.freeze(shallowCloneDeclarations);
+        this.declarations = shallowCloneDeclarations;
 
         // Create a map of functions based on the declarations which all call the queueWorker
         // function with various arguments. The queueWorker function passes the name to the
@@ -52,7 +55,6 @@ export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmit
         const workers = Object.fromEntries(entries);
 
         Object.freeze(workers);
-
         this.workers = workers;
     }
 
@@ -74,15 +76,17 @@ export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmit
      *
      * @param name Name of the worker on this ThreadzAPI instance to interact with. Shortcut to using `Interact.with()`
      * @returns Interact API instance
-     * 
+     *
      * @example
      * const worker = api.interactWith('myFunc').args('abc', 123).go();
-     * 
+     *
      * await worker.waitFor()
      */
     interactWith<K extends keyof T>(name: K) {
         if (!this.workers[name]) {
-            throw new MyError(ERROR_CONFIG(`A worker with the name ${name} doesn't exist on this ThreadzAPI instance. Check your declarations.`));
+            throw new MyError(
+                ERROR_CONFIG(`A worker with the name ${String(name)} doesn't exist on this ThreadzAPI instance. Check your declarations.`)
+            );
         }
 
         return Interact.with(this.workers[name]);

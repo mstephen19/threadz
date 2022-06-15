@@ -20,7 +20,7 @@ type DeclarationsMap<T extends ThreadzAPI[]> = [...{ [K in keyof T]: Declaration
  *
  * export default declare(merge([declarations1, declarations2]))
  */
-export function merge<T extends ThreadzAPI[]>(rest: [...{ [K in keyof T]: T[K] }]) {
+export const merge = <T extends ThreadzAPI[]>(rest: [...{ [K in keyof T]: T[K] }]) => {
     if (rest.some((item) => !(item instanceof ThreadzAPI))) {
         throw new MyError(ERROR_CONFIG('All items to be merged must be ThreadzAPI instances.'));
     }
@@ -29,4 +29,4 @@ export function merge<T extends ThreadzAPI[]>(rest: [...{ [K in keyof T]: T[K] }
     const merged = mergedDeclarations.reduce((acc, curr) => ({ ...acc, ...curr })) as UnionToIntersection<DeclarationsMap<T>[number]>;
 
     return merged;
-}
+};
