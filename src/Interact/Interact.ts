@@ -1,4 +1,4 @@
-import { isMainThread } from 'worker_threads';
+import { isMainThread, MessagePort } from 'worker_threads';
 import { ThreadzWorker } from '../ThreadzWorker';
 import { MyError } from '../Errors';
 import { ERROR_CONFIG } from './consts';
@@ -109,6 +109,27 @@ export class Interact<T extends MappedWorkerFunction> {
     }
 
     /**
+     *
+     * @param port Add a message port to the worker.
+     *
+     * @example
+     * const { port1, port2 } = new MessageChannel();
+     *
+     * const worker = api.interactWith('testMessageChannel').addMessagePort(port1).go();
+     * const worker2 = api.interactWith('testMessageChannel').addMessagePort(port2).go();
+     *
+     * await Promise.all([worker.waitFor(), worker2.waitFor()]);
+     *
+     * port1.close();
+     * port2.close();
+     */
+    addMessagePort(port: MessagePort) {
+        this.workerData.port = port;
+        this.setOptions({ ...this.options, transferList: [...(this.options.transferList ? this.options.transferList : []), port] });
+        return this;
+    }
+
+    /**
      * @param callback Function to run when a message is received from the worker.
      */
     onMessage<T extends AcceptableDataType = AcceptableDataType>(callback: ThreadzWorkerEvents<unknown, T>['message']) {
@@ -164,15 +185,12 @@ export class Interact<T extends MappedWorkerFunction> {
     }
 
     /**
-     * Run the worker and return it to be further interacted with while it is running.
+     *
+     * Return the ThreadzWorker without running it through the ThreadzPool
      *
      * @returns ThreadzWorker
-     *
-     * @example Interact.with(declarations.workers.myFunc).args('abc', 123).onMessage((data) => console.log(data)).go()
      */
-    go() {
-        if (!isMainThread) throw new MyError(ERROR_CONFIG("Can't run workers within workers!"));
-
+    #build() {
         // Create the worker
         const worker = new ThreadzWorker<T>({ priority: this.priority, workerData: this.workerData, options: this.options });
 
@@ -182,6 +200,21 @@ export class Interact<T extends MappedWorkerFunction> {
         this.onSuccessCallbacks.forEach((callback) => worker.on('success', callback));
         this.onAbortCallbacks.forEach((callback) => worker.on('aborted', callback));
         this.onStartCallbacks.forEach((callback) => worker.on('started', callback));
+
+        return worker;
+    }
+
+    /**
+     * Run the worker and return it to be further interacted with while it is running.
+     *
+     * @returns ThreadzWorker
+     *
+     * @example Interact.with(declarations.workers.myFunc).args('abc', 123).onMessage((data) => console.log(data)).go()
+     */
+    go() {
+        if (!isMainThread) throw new MyError(ERROR_CONFIG("Can't run workers within workers!"));
+
+        const worker = this.#build();
 
         // Add the worker to the ThreadzPool queue
         ThreadzWorkerPool.enqueue(worker);

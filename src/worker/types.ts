@@ -1,7 +1,10 @@
+import { MessagePort } from 'worker_threads';
+
 export type WorkerData = {
     name: string;
     location: string;
     args: unknown[];
+    port?: MessagePort
 };
 
 export type WorkerMessagePayload<T = unknown> = {

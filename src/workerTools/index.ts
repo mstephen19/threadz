@@ -1,15 +1,39 @@
-import { parentPort, isMainThread, threadId as threadIdValue } from 'worker_threads';
+import { parentPort, isMainThread, threadId as threadIdValue, TransferListItem, workerData } from 'worker_threads';
 import { MyError } from '../Errors';
 import { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory';
-import type { WorkerMessagePayload } from '../worker/types';
+import type { WorkerData, WorkerMessagePayload } from '../worker/types';
 import { ERROR_CONFIG } from './consts';
+
+const sendCommunication = <T extends AcceptableDataType>(data: T | SharedMemoryTransferObject, transferListItems: TransferListItem[] = []) => {
+    const { port } = workerData as WorkerData;
+
+    if (!port) {
+        throw new MyError(
+            ERROR_CONFIG("Can't find a message port to communicate on! Did you pass a MessagePort instance into the worker with the Interact API?")
+        );
+    }
+
+    port.postMessage(data, transferListItems);
+};
+
+const onCommunication = <T extends AcceptableDataType = AcceptableDataType>(callback: (data: T | SharedMemoryTransferObject) => void) => {
+    const { port } = workerData as WorkerData;
+
+    if (!port) {
+        throw new MyError(
+            ERROR_CONFIG("Can't find a message port to listen on! Did you pass a MessagePort instance into the worker with the Interact API?")
+        );
+    }
+
+    port.on('message', callback);
+};
 
 /**
  * Send a message to be consumed back on the main thread.
- * 
+ *
  * @example workerTools.sendMessageToParent('hello main thread!')
  */
-const sendMessageToParent = <T extends AcceptableDataType>(data: T | SharedMemoryTransferObject) => {
+const sendMessageToParent = <T extends AcceptableDataType>(data: T | SharedMemoryTransferObject, transferListItems: TransferListItem[] = []) => {
     if (isMainThread) {
         throw new MyError(ERROR_CONFIG('Attempting to use a workerTool on the main thread. Not allowed.'));
     }
@@ -19,13 +43,13 @@ const sendMessageToParent = <T extends AcceptableDataType>(data: T | SharedMemor
         messageData: data,
     };
 
-    parentPort.postMessage(payload);
+    parentPort.postMessage(payload, transferListItems);
 };
 
 /**
  *
  * @param callback Function to run any time a message is received from the parent thread.
- * 
+ *
  * @example workerTools.onParentMessage((data) => console.log(data))
  */
 const onParentMessage = <T extends AcceptableDataType = AcceptableDataType>(callback: (data: T | SharedMemoryTransferObject) => void) => {
@@ -38,7 +62,7 @@ const onParentMessage = <T extends AcceptableDataType = AcceptableDataType>(call
 
 /**
  * Immediately terminate the worker and return out with an `aborted` status.
- * 
+ *
  * @example
  * workerTools.abort();
  * workerTools.abort('API returned unexpected value');
@@ -63,7 +87,7 @@ const abort = (message?: string | number) => {
  * Prevent workers from hanging or running too long by aborting out after a certain amount of time has passed.
  *
  * @param seconds Number of seconds to let the worker continue running before aborting.
- * 
+ *
  * @example workerTools.abortOnTimeout({ seconds: 120, message: 'Operation took too long' })
  */
 const abortOnTimeout = ({ seconds, message }: { seconds: number; message?: string | number }) => {
@@ -76,7 +100,7 @@ const abortOnTimeout = ({ seconds, message }: { seconds: number; message?: strin
 
 /**
  * Grab the unique ID of the thread currently being used.
- * 
+ *
  * @example
  * const myValue = `${data}-${threadID}`
  */
@@ -97,6 +121,8 @@ const workerTools = {
     abort,
     abortOnTimeout,
     threadID,
+    sendCommunication,
+    onCommunication,
 };
 
 export { workerTools };

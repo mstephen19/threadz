@@ -1,4 +1,4 @@
-import { Worker, SHARE_ENV } from 'worker_threads';
+import { Worker, SHARE_ENV, TransferListItem } from 'worker_threads';
 import { TypedEmitter } from 'tiny-typed-emitter';
 import path from 'path';
 import { MyError } from '../Errors';
@@ -22,6 +22,7 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
     priority: boolean;
     protected running: boolean;
     private worker: Worker;
+    protected completed: boolean;
 
     constructor({ priority, options, workerData }: { priority: boolean; options: WorkerOptions; workerData: WorkerData }) {
         super();
@@ -29,6 +30,8 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
         this.priority = priority;
         this.options = options;
         this.workerData = workerData;
+        this.running = false;
+        this.completed = false;
     }
 
     /**
@@ -61,6 +64,7 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
             if (done && error) this.emit('error', new MyError(ERROR_CONFIG(`Failed within worker: ${error}`)));
 
             this.running = false;
+            this.completed = true;
             worker.terminate();
         });
     }
@@ -95,10 +99,10 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
      *
      * @example worker.sendMessage('hello worker!');
      */
-    sendMessage<T extends AcceptableDataType>(data: T | SharedMemoryTransferObject) {
+    sendMessage<T extends AcceptableDataType>(data: T | SharedMemoryTransferObject, transferListItems: TransferListItem[] = []) {
         if (!this.running) return;
 
-        this.worker.postMessage(data);
+        this.worker.postMessage(data, transferListItems);
     }
 
     /**
