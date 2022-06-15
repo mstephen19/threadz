@@ -5,4 +5,5 @@ export interface ThreadzWorkerEvents<T = unknown, B = unknown> {
     success: (data: T) => void;
     message: (messageData: B) => void;
     aborted: (abortMessage: string) => void;
+    started: () => void;
 }

@@ -38,6 +38,7 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
      */
     go() {
         if (this.running) return;
+        this.emit('started');
 
         const worker = new Worker(path.join(__dirname, '../worker/index.js'), {
             ...this.options,
@@ -74,7 +75,7 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
     /**
      *
      * @param priority A boolean or `0`/`1` defining what priority status the worker should have. Will have no effect if the worker is already running.
-     * 
+     *
      * @example
      * worker.setPriority(0);
      * worker.setPriority(1);
@@ -91,7 +92,7 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
     /**
      *
      * @param data Send a message to the worker
-     * 
+     *
      * @example worker.sendMessage('hello worker!');
      */
     sendMessage<T extends AcceptableDataType>(data: T | SharedMemoryTransferObject) {
@@ -104,10 +105,10 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
      * Wait for the worker to finish, and get its returned result.
      *
      * @returns A promise of the return value of the original declaration function
-     * 
+     *
      * @example
      * const data = await worker.waitFor();
-     * 
+     *
      * console.log(data);
      */
     waitFor(): Promise<DeepUnPromisify<ReturnType<T>>> {

@@ -22,6 +22,7 @@ export class Interact<T extends MappedWorkerFunction> {
     private onFailureCallbacks: ThreadzWorkerEvents<any, any>['error'][];
     private onSuccessCallbacks: ThreadzWorkerEvents<DeepUnPromisify<ReturnType<T>>, any>['success'][];
     private onAbortCallbacks: ThreadzWorkerEvents['aborted'][];
+    private onStartCallbacks: ThreadzWorkerEvents['started'][];
 
     private constructor(worker: T) {
         const { _name, _location, _options, _priority } = worker as ModifiedMappedWorkerFunction<T>;
@@ -38,13 +39,14 @@ export class Interact<T extends MappedWorkerFunction> {
         this.onFailureCallbacks = [];
         this.onSuccessCallbacks = [];
         this.onAbortCallbacks = [];
+        this.onStartCallbacks = [];
     }
 
     /**
      *
      * @param worker Worker function from the `workers` property in a ThreadzAPI instance
      * @returns Interact API
-     * 
+     *
      * @example Interact.with(declarations.workers.myFunc)
      */
     static with<A extends MappedWorkerFunction>(worker: A) {
@@ -63,7 +65,7 @@ export class Interact<T extends MappedWorkerFunction> {
 
     /**
      * Pass arguments to the worker function within this method.
-     * 
+     *
      * @example interact.args('param1', 2, { hello: 'world' })
      */
     args(...args: Parameters<T>) {
@@ -73,7 +75,7 @@ export class Interact<T extends MappedWorkerFunction> {
 
     /**
      * Treat the worker as a priority. This means that it will be pushed to the front of the ThreadzPool queue instead of the back.
-     * 
+     *
      * @example interact.isPriority()
      */
     isPriority() {
@@ -83,7 +85,7 @@ export class Interact<T extends MappedWorkerFunction> {
 
     /**
      * Treat the worker as normal. You only need to use this method if you set `priority` to `true` in the original declaration.
-     * 
+     *
      * @example interact.isNotPriority()
      */
     isNotPriority() {
@@ -95,7 +97,7 @@ export class Interact<T extends MappedWorkerFunction> {
      * Set the options for the worker's run. Overrides any options defined within the original declaration.
      *
      * @param options Options to set.
-     * 
+     *
      * @example
      * interact.setOptions({
      *     trackUnmanagedFds: false,
@@ -138,8 +140,21 @@ export class Interact<T extends MappedWorkerFunction> {
 
     /**
      *
+     * This functionality might be useful when dealing with large queues of workers.
+     *
+     * @param callback Function to run when the worker starts running.
+     */
+    onStart(callback: ThreadzWorkerEvents['started']) {
+        if (typeof callback === 'function') {
+            this.onStartCallbacks.push(callback);
+        }
+        return this;
+    }
+
+    /**
+     *
      * @param callback Function to run whenever the worker is aborted. A worker can only be aborted with the `workerTools.abort()` and `workerTools.abortOnTimeout()` functions.
-     * 
+     *
      */
     onAbort(callback: ThreadzWorkerEvents['aborted']) {
         if (typeof callback === 'function') {
@@ -152,19 +167,23 @@ export class Interact<T extends MappedWorkerFunction> {
      * Run the worker and return it to be further interacted with while it is running.
      *
      * @returns ThreadzWorker
-     * 
+     *
      * @example Interact.with(declarations.workers.myFunc).args('abc', 123).onMessage((data) => console.log(data)).go()
      */
     go() {
         if (!isMainThread) throw new MyError(ERROR_CONFIG("Can't run workers within workers!"));
 
+        // Create the worker
         const worker = new ThreadzWorker<T>({ priority: this.priority, workerData: this.workerData, options: this.options });
 
+        // Add all event handlers before worker is even run
         this.onMessageCallbacks.forEach((callback) => worker.on('message', callback));
         this.onFailureCallbacks.forEach((callback) => worker.on('error', callback));
         this.onSuccessCallbacks.forEach((callback) => worker.on('success', callback));
         this.onAbortCallbacks.forEach((callback) => worker.on('aborted', callback));
+        this.onStartCallbacks.forEach((callback) => worker.on('started', callback));
 
+        // Add the worker to the ThreadzPool queue
         ThreadzWorkerPool.enqueue(worker);
 
         return worker;
