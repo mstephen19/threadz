@@ -154,6 +154,8 @@ import api from './declarations';
     -   The global `ThreadzWorkerPool` instance being used to manage all workers.
 -   **`interactWith()`**: _`(workerName: string)` => [`Interact`](#interact-api)_
     -   Pass in the name of a worker on the `ThreadzAPI` instance to create an interaction session for that worker with the `Interact` API.
+-   **`on()`**: `(callback: Function)` => `void`
+    -   Supports the `workerQueued` and `workerDone` methods.
 
 ## Interact API
 
@@ -302,6 +304,12 @@ Sets the priority of the worker based on a boolean or number value. Has no effec
 Returns a promise which resolves/rejects once the worker has succeeded, thrown an error, or aborted.
 
 The data the promise resolves with is the return value of the original declaration function.
+
+#### `justWaitFor()`
+
+`()` => `Promise<void>`
+
+Returns a promise that will always resolve when the worker finishes, regardless of whether it succeeded, errored out, or was aborted.
 
 #### `on()`
 
