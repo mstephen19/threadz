@@ -1,6 +1,9 @@
 import type { ResourceLimits, TransferListItem } from 'worker_threads';
+import { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory';
 
-export type DeclarationFunction = { (...args: any[]): unknown | Promise<unknown> };
+type RawTypeOrPromise<T> = T | Promise<T>;
+
+export type DeclarationFunction = { (...args: any[]): RawTypeOrPromise<AcceptableDataType | SharedMemoryTransferObject | void> };
 
 export type Declaration = {
     /**
