@@ -1,6 +1,6 @@
 {
     "name": "threadz",
-    "version": "1.2.0",
+    "version": "2.0.0",
     "description": "A high-level abstraction for multi-threading in Node.js and sharing memory.",
     "main": "dist/index.js",
     "scripts": {
@@ -19,6 +19,7 @@
         "worker",
         "workers",
         "worker-pool",
+        "worker threads",
         "multi-threading",
         "multithreading",
         "function",

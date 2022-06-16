@@ -9,7 +9,7 @@ import type { WorkerData } from '../worker/types';
 import type { MappedWorkerFunction, ModifiedMappedWorkerFunction } from '../ThreadzAPI/types';
 import type { ThreadzWorkerEvents } from '../ThreadzWorker/types';
 import type { DeepUnPromisify } from './types';
-import type { AcceptableDataType } from '../SharedMemory';
+import type { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory';
 
 /**
  * Use this API to interact with a worker returned by ThreadzAPI by sending and receiving messages back and forth.
@@ -109,6 +109,16 @@ export class Interact<T extends MappedWorkerFunction> {
     }
 
     /**
+     * Set the options for the worker's run with a callback. Overrides any options defined within the original declaration.
+     *
+     * @param callback A callback function taking in the previous options and returning a new set of options for the worker.
+     */
+    setOptionsWithPrevious(callback: (options: WorkerOptions) => WorkerOptions) {
+        this.options = callback(this.options);
+        return this;
+    }
+
+    /**
      *
      * @param port Add a message port to the worker.
      *
@@ -132,7 +142,9 @@ export class Interact<T extends MappedWorkerFunction> {
     /**
      * @param callback Function to run when a message is received from the worker.
      */
-    onMessage<T extends AcceptableDataType = AcceptableDataType>(callback: ThreadzWorkerEvents<unknown, T>['message']) {
+    onMessage<T extends AcceptableDataType>(callback: ThreadzWorkerEvents<unknown, T>['message']): void;
+    onMessage<T extends SharedMemoryTransferObject>(callback: ThreadzWorkerEvents<unknown, T>['message']): void;
+    onMessage<T extends AcceptableDataType = AcceptableDataType>(callback: ThreadzWorkerEvents<unknown, T | SharedMemoryTransferObject>['message']) {
         if (typeof callback === 'function') {
             this.onMessageCallbacks.push(callback);
         }

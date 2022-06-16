@@ -4,6 +4,9 @@ import { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory'
 import type { WorkerData, WorkerMessagePayload } from '../worker/types';
 import { ERROR_CONFIG } from './consts';
 
+/**
+ * If you have passed a message port to the worker (using the Interact API), send messages to the port with this function.
+ */
 const sendCommunication = <T extends AcceptableDataType>(data: T | SharedMemoryTransferObject, transferListItems: TransferListItem[] = []) => {
     const { port } = workerData as WorkerData;
 
@@ -16,6 +19,9 @@ const sendCommunication = <T extends AcceptableDataType>(data: T | SharedMemoryT
     port.postMessage(data, transferListItems);
 };
 
+/**
+ * If you have passed a message port to the worker (using the Interact API), list for messages on the port with this function.
+ */
 const onCommunication = <T extends AcceptableDataType = AcceptableDataType>(callback: (data: T | SharedMemoryTransferObject) => void) => {
     const { port } = workerData as WorkerData;
 
@@ -52,13 +58,15 @@ const sendMessageToParent = <T extends AcceptableDataType>(data: T | SharedMemor
  *
  * @example workerTools.onParentMessage((data) => console.log(data))
  */
-const onParentMessage = <T extends AcceptableDataType = AcceptableDataType>(callback: (data: T | SharedMemoryTransferObject) => void) => {
+function onParentMessage<T extends AcceptableDataType>(callback: (data: T) => void): void;
+function onParentMessage<T extends SharedMemoryTransferObject>(callback: (data: T) => void): void;
+function onParentMessage<T extends AcceptableDataType = AcceptableDataType>(callback: (data: T | SharedMemoryTransferObject) => void) {
     if (isMainThread) {
         throw new MyError(ERROR_CONFIG('Attempting to use a workerTool on the main thread. Not allowed.'));
     }
 
     parentPort.on('message', callback);
-};
+}
 
 /**
  * Immediately terminate the worker and return out with an `aborted` status.

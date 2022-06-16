@@ -25,9 +25,16 @@ export class ThreadzWorkerPool extends TypedEmitter<ThreadzWorkerPoolEvents> {
     }
 
     /**
-     * Whether or not the queue is currently full.
+     * Get the current length of the queue.
      */
-    get queueIsFull() {
+    get queueLength() {
+        return this.queue.length;
+    }
+
+    /**
+     * Whether or not the max number of possible workers is running right now.
+     */
+    get maxedOut() {
         return this.active >= this.max;
     }
 
@@ -65,7 +72,7 @@ export class ThreadzWorkerPool extends TypedEmitter<ThreadzWorkerPoolEvents> {
      * @param value A number or a `MaxConcurrencyOptions` value to limit the number of workers that can be run at a single time.
      *
      * **NOTE:** It is recommended to use `MaxConcurrencyOptions` values. Do not set this number to be ridiculously high. The maximum allowed is `numberOfMachineCpus * 50`, which is already ridiculous.
-     * 
+     *
      * @example
      * // Using MaxConcurrencyOptions
      * ThreadzPool.setMaxConcurrency('1/4');
@@ -74,10 +81,10 @@ export class ThreadzWorkerPool extends TypedEmitter<ThreadzWorkerPoolEvents> {
      * ThreadzPool.setMaxConcurrency('100%');
      * ThreadzPool.setMaxConcurrency('200%');
      * ThreadzPool.setMaxConcurrency('400%');
-     * 
+     *
      * // Using a number
      * ThreadzPool.setMaxConcurrency(6));
-     * 
+     *
      * // This will error out unless your machine somehow has 40 cores
      * ThreadzPool.setMaxConcurrency(2000);
      */
@@ -134,11 +141,11 @@ export class ThreadzWorkerPool extends TypedEmitter<ThreadzWorkerPoolEvents> {
         else this.queue.push(input);
 
         // If the queue is not full, go ahead and run the worker.
-        if (!this.queueIsFull) this.#executeNextWorker();
+        if (!this.maxedOut) this.#executeNextWorker();
     }
 
     #executeNextWorker() {
-        if (this.queueIsFull || !this.queue.length) return;
+        if (this.maxedOut || !this.queue.length) return;
 
         // Pull the worker from the front of the queue.
         const worker = this.queue.shift();
