@@ -4,6 +4,8 @@
 
 ![TypeScript](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label) [![mstephen19](https://circleci.com/gh/mstephen19/threadz.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/threadz) ![GitHub issues](https://img.shields.io/github/issues/mstephen19/threadz)
 
+![Logo](https://i.imgur.com/L7158yF.jpg)
+
 A feature rich and scalable general-purpose multi-threading library that makes it easy to utilize all of a given machine's resources in Node.js.
 
 ## Table of Contents
