@@ -1,6 +1,8 @@
 # Threadz
 
-![ts](https://flat.badgen.net/badge/Built%20With/TypeScript/blue) ![npm](https://img.shields.io/npm/dw/threadz) ![npm](https://img.shields.io/npm/v/threadz)
+![npm](https://img.shields.io/npm/v/threadz) ![MIT](https://img.shields.io/badge/license-MIT-blue) ![npm](https://img.shields.io/npm/dw/threadz)
+
+![TypeScript](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label) [![mstephen19](https://circleci.com/gh/mstephen19/threadz.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/threadz) ![GitHub issues](https://img.shields.io/github/issues/mstephen19/threadz)
 
 A feature rich and scalable general-purpose multi-threading library that makes it easy to utilize all of a given machine's resources in Node.js.
 
@@ -281,7 +283,7 @@ A boolean indicating whether or not the worker is running yet.
 
 #### `sendMessage()`
 
-`(data: AcceptableDataType | SharedMemoryTransferObject, transferListItems?: TransferListItem[])` => `void`
+`(data: AcceptableDataType | SharedMemoryTransferObject, transferList?: TransferListItem[])` => `void`
 
 Send a message to the worker while it is running by passing in a basic data type or a [`SharedMemoryTransferObject`](#sharedmemory).
 
@@ -388,7 +390,7 @@ There are currently 7 tools in the `workerTools` toolbox.
 
 #### `sendMessageToParent()`
 
-`(data: AcceptableDataType | SharedMemoryTransferObject, transferListItems?: TransferListItem[])` => `void`
+`(data: AcceptableDataType | SharedMemoryTransferObject, transferList?: TransferListItem[])` => `void`
 
 Send a message to be consumed back on the main thread.
 
@@ -398,7 +400,7 @@ Pass a function to run any time a message is received from the parent thread. Th
 
 #### `sendCommunication()`
 
-`(data: AcceptableDataType | SharedMemoryTransferObject, transferListItems?: TransferListItem[])` => `void`
+`(data: AcceptableDataType | SharedMemoryTransferObject, transferList?: TransferListItem[])` => `void`
 
 If you have passed a message port to the worker (using the [`Interact` API](#interact-api)), send messages to the port with this function.
 

@@ -7,7 +7,7 @@ import { ERROR_CONFIG } from './consts';
 /**
  * If you have passed a message port to the worker (using the Interact API), send messages to the port with this function.
  */
-const sendCommunication = <T extends AcceptableDataType>(data: T | SharedMemoryTransferObject, transferListItems: TransferListItem[] = []) => {
+const sendCommunication = <T extends AcceptableDataType>(data: T | SharedMemoryTransferObject, transferList: TransferListItem[] = []) => {
     const { port } = workerData as WorkerData;
 
     if (!port) {
@@ -16,7 +16,7 @@ const sendCommunication = <T extends AcceptableDataType>(data: T | SharedMemoryT
         );
     }
 
-    port.postMessage(data, transferListItems);
+    port.postMessage(data, transferList);
 };
 
 /**
@@ -41,7 +41,7 @@ function onCommunication<T extends AcceptableDataType = AcceptableDataType>(call
  *
  * @example workerTools.sendMessageToParent('hello main thread!')
  */
-const sendMessageToParent = <T extends AcceptableDataType>(data: T | SharedMemoryTransferObject, transferListItems: TransferListItem[] = []) => {
+const sendMessageToParent = <T extends AcceptableDataType>(data: T | SharedMemoryTransferObject, transferList: TransferListItem[] = []) => {
     if (isMainThread) {
         throw new MyError(ERROR_CONFIG('Attempting to use a workerTool on the main thread. Not allowed.'));
     }
@@ -51,7 +51,7 @@ const sendMessageToParent = <T extends AcceptableDataType>(data: T | SharedMemor
         messageData: data,
     };
 
-    parentPort.postMessage(payload, transferListItems);
+    parentPort.postMessage(payload, transferList);
 };
 
 /**

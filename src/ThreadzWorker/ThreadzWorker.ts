@@ -99,10 +99,10 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
      *
      * @example worker.sendMessage('hello worker!');
      */
-    sendMessage<T extends AcceptableDataType>(data: T | SharedMemoryTransferObject, transferListItems: TransferListItem[] = []) {
+    sendMessage<T extends AcceptableDataType>(data: T | SharedMemoryTransferObject, transferList: TransferListItem[] = []) {
         if (!this.running) return;
 
-        this.worker.postMessage(data, transferListItems);
+        this.worker.postMessage(data, transferList);
     }
 
     /**
