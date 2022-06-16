@@ -117,6 +117,10 @@ To get a full list of the configurations supported in the **options** property, 
 
 > **Note:** The function under the **worker** property doesn't have to be defined right within the `declare()` function. It can be imported from elsewhere.
 
+> **Note:** Declaration functions can also be asynchronous and return promises, which will be awaited within the worker.
+
+> **Note:** Unfortunately, declaration functions cannot accept generic types.
+
 ## ThreadzAPI
 
 The `declare()` function returns an instance of `ThreadzAPI`, off of which your workers can be called. During initialization, declaration functions are mapped into the `threadzAPI.workers` property, where they can be referenced by the names used in the original declarations. Using the declarations in the above section, this code would be valid:
