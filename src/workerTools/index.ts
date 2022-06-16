@@ -22,7 +22,9 @@ const sendCommunication = <T extends AcceptableDataType>(data: T | SharedMemoryT
 /**
  * If you have passed a message port to the worker (using the Interact API), list for messages on the port with this function.
  */
-const onCommunication = <T extends AcceptableDataType = AcceptableDataType>(callback: (data: T | SharedMemoryTransferObject) => void) => {
+function onCommunication<T extends AcceptableDataType>(callback: (data: T) => void): void;
+function onCommunication<T extends SharedMemoryTransferObject>(callback: (data: T) => void): void;
+function onCommunication<T extends AcceptableDataType = AcceptableDataType>(callback: (data: T | SharedMemoryTransferObject) => void) {
     const { port } = workerData as WorkerData;
 
     if (!port) {
@@ -32,7 +34,7 @@ const onCommunication = <T extends AcceptableDataType = AcceptableDataType>(call
     }
 
     port.on('message', callback);
-};
+}
 
 /**
  * Send a message to be consumed back on the main thread.
