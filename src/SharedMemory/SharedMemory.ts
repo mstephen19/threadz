@@ -15,18 +15,34 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
     }
 
     /**
-     * Pass in a SharedMemory instance, a SharedMemoryTransferObject, or an AcceptableDataType (with options).
+     * Pass in an AcceptableDataType (with options).
      *
      * @returns SharedMemory instance.
      *
      * @example
      * SharedMemory.from({ hello: 'world' }, { sizeMb: 0.5 });
-     * SharedMemory.from(SharedMemory.from('test'));
-     * SharedMemory.from(SharedMemory.from(123).transfer());
      *
      */
     static from<T extends AcceptableDataType>(state: T, { sizeMb }?: FromOptions): SharedMemory<T>;
+    /**
+     * Pass in a SharedMemory instance and receive the same SharedMemory instance back.
+     *
+     * @returns SharedMemory instance.
+     *
+     * @example
+     * SharedMemory.from(SharedMemory.from('test'));
+     *
+     */
     static from<T extends SharedMemory>(instance: T): T;
+    /**
+     * Pass in a SharedMemoryTransferObject.
+     *
+     * @returns SharedMemory instance.
+     *
+     * @example
+     * SharedMemory.from(SharedMemory.from(123).transfer());
+     *
+     */
     static from<T extends SharedMemoryTransferObject>(
         transferObject: T
     ): SharedMemory<T extends SharedMemoryTransferObject<infer A> ? A : AcceptableDataType>;
@@ -85,9 +101,16 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
      *
      * @example
      * const data = memory.get();
-     * const data = await memory.get(true);
      */
     get(): T;
+    /**
+     * Pass in `true` to run the operation as a microtask.
+     *
+     * @returns A promise of the value currently stored in the memory space.
+     *
+     * @example
+     * const data = await memory.get(true);
+     */
     get(microtask: true): Promise<T>;
     get(microtask?: boolean) {
         // Run as a microtask.
@@ -111,13 +134,18 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
     /**
      * Entirely reset the memory space (not deletion of the memory space!).
      *
+     * @example
+     * memory.wipe();
+     */
+    wipe(): void;
+    /**
+     * Entirely reset the memory space (not deletion of the memory space!).
+     *
      * Pass in `true` to run the operation as a microtask.
      *
      * @example
-     * memory.wipe();
      * await memory.wipe(true);
      */
-    wipe(): void;
     wipe(microtask: true): Promise<void>;
     wipe(microtask?: boolean) {
         // Run as a microtask.
@@ -140,13 +168,18 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
     /**
      * Set a new value for the current memory space.
      *
+     * @example
+     * memory.set('hi');
+     */
+    set<A extends T>(data: A): void;
+    /**
+     * Set a new value for the current memory space.
+     *
      * Pass `true` as the second parameter to run the operation as a microtask.
      *
      * @example
-     * memory.set('hi');
      * await memory.set('hi', true);
      */
-    set<A extends T>(data: A): void;
     set<A extends T>(data: A, microtask: true): Promise<void>;
     set<A extends T>(data: A, microtask?: boolean) {
         // Run as a microtask.
