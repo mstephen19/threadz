@@ -55,6 +55,9 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
         }
     }
 
+    /**
+     * The byte length of the stored Uint8Array.
+     */
     get byteLength() {
         return this.byteArray.byteLength;
     }
@@ -106,7 +109,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
     }
 
     /**
-     * Entirely reset the memory space (not deletion!).
+     * Entirely reset the memory space (not deletion of the memory space!).
      *
      * Pass in `true` to run the operation as a microtask.
      *

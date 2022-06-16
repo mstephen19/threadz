@@ -15,6 +15,7 @@ A feature rich and scalable general-purpose multi-threading library that makes i
 -   [`ThreadzWorker`](#threadzworker)
 -   [ThreadzPool](#threadzpool)
 -   [workerTools](#workertools)
+-   [`SharedMemory`](#sharedmemory)
 
 ## Features
 
@@ -212,7 +213,7 @@ Set the options for the worker's run with a callback. Overrides any options defi
 
 `(port: MessagePort)` => `Interact`
 
-Add a message port to the worker to be accessed by `workerTools.sendCommunication` and `workerTools.onCommunication`.
+Add a message port to the worker to be accessed by [`workerTools.sendCommunication`](#workertools) and `workerTools.onCommunication`.
 
 #### `go()`
 
@@ -233,7 +234,7 @@ Create the worker and queue it up in the ThreadzPool to be run. Returns a `Threa
     -   This functionality might be useful when dealing with large queues of workers.
 -   **`onAbort()`**
     -   Pass a function to run whenever the worker is aborted.
-    -   A worker can only be aborted with the `workerTools.abort()` and `workerTools.abortOnTimeout()` functions.
+    -   A worker can only be aborted with the [`workerTools.abort()`](#workertools) and `workerTools.abortOnTimeout()` functions.
 
 ## `ThreadzWorker`
 
@@ -265,7 +266,7 @@ A boolean indicating whether or not the worker is running yet.
 
 `(data: AcceptableDataType | SharedMemoryTransferObject, transferListItems?: TransferListItem[])` => `void`
 
-Send a message to the worker while it is running by passing in a basic data type or a `SharedMemoryTransferObject`.
+Send a message to the worker while it is running by passing in a basic data type or a [`SharedMemoryTransferObject`](#sharedmemory).
 
 #### `setPriority()`
 
@@ -344,7 +345,7 @@ Supports the `dormant` event.
 
 ## workerTools
 
-The `workerTools` object is a set of tools intended for use exclusively within workers.
+The `workerTools` object is a set of tools intended for use exclusively within workers. It can be used to send and receive messages to and from the main thread, as well as communicate with other workers running on different threads.
 
 ```TypeScript
 import { declare, workerTools } from 'threadz';
@@ -364,4 +365,149 @@ export default declare({
 });
 ```
 
+### Methods & properties
+
+There are currently 7 tools in the `workerTools` toolbox.
+
+#### `sendMessageToParent()`
+
+`(data: AcceptableDataType | SharedMemoryTransferObject, transferListItems?: TransferListItem[])` => `void`
+
+Send a message to be consumed back on the main thread.
+
+#### `onParentMessage()`
+
+Pass a function to run any time a message is received from the parent thread. The data is passed in as the first parameter.
+
+#### `sendCommunication()`
+
+`(data: AcceptableDataType | SharedMemoryTransferObject, transferListItems?: TransferListItem[])` => `void`
+
+If you have passed a message port to the worker (using the [`Interact` API](#interact-api)), send messages to the port with this function.
+
+#### `onCommunication()`
+
+If you have passed a message port to the worker (using the Interact API), list for messages on the port with this function by passing a callback which takes in the received data.
+
+#### `threadID()`
+
+Grab the unique ID of the thread currently being used.
+
+#### `abort()`
+
+`(message?: string)` => `never`
+
+Immediately terminate the worker and return out with an `aborted` status.
+
+#### `abortOnTimeout()`
+
+`({ seconds, message }: { seconds: number, message: string })` => `never`
+
+Prevent workers from hanging or running too long by aborting out after a certain amount of time has passed.
+
+## `SharedMemory`
+
+Sharing memory between multiple threads is simple with the Threadz `SharedMemory` API. Use the static `SharedMemory.from()` method to create a shared state which is retained on all threads.
+
+```TypeScript
+import { SharedMemory } from 'threadz';
+
+const mem = SharedMemory.from<Record<string, string>>({ foo: 'bar' });
+
+console.log(mem.get()); // -> { foo: 'bar' };
+
+mem.setWith((prev) => {
+    return {
+        ...prev,
+        fizz: 'buzz',
+    };
+});
+
+console.log(mem.get());
+```
+
+### Methods & properties
+
+There are a few different properties and methods on a `SharedMemory` instance to help you manipulate the data stored within its state, as well as send it to other threads.
+
+#### `byteLength`
+
+The byte length of the stored Uint8Array.
+
+#### `transfer()`
+
+`()` => `SharedMemoryTransferObject`
+
+This is one of the most important methods on the `SharedMemory` API. Instances cannot be directly send to workers via parameters or messages, so they must be converted into `SharedMemoryTransferObjects`s using the `sharedMemory.transfer()` function.
+
+See this example:
+
+**declarations.ts**:
+
+```TypeScript
+import { declare, SharedMemory } from 'threadz';
+import type { SharedMemoryTransferObject } from 'threadz';
+
+export default declare({
+    myWorker: {
+        // The memory data will come in as a SharedMemoryTransferObject
+        worker: (transfer: SharedMemoryTransferObject<string>) => {
+            // We can use the SharedMemory.from() function on a
+            // SharedMemoryTransferObject and continue using the
+            // SharedMemory API to manipulate the data.
+            const mem = SharedMemory.from(transfer);
+
+            console.log(mem.get());
+        },
+    },
+});
+```
+
+**index.ts**:
+
+```TypeScript
+import { SharedMemory } from 'threadz';
+import api from './declarations';
+
+(async () => {
+    const mem = SharedMemory.from('hey');
+
+    // The SharedMemory instance must be converted into a
+    // SharedMemoryTransferObject when passed into a worker
+    await api.workers.myWorker(mem.transfer());
+})();
+```
+
+#### `get()`
+
+`(microtask?: boolean)` => `unknown`
+
+Get the current state.
+
+Pass in `true` to run the operation as a microtask (returns a promise).
+
+#### `wipe()`
+
+`(microtask?: boolean)` => `void`
+
+Entirely reset the memory space (not deletion of the memory space!).
+
+Pass in `true` to run the operation as a microtask (returns a promise).
+
+#### `set()`
+
+`(data: AcceptableDataType)` => `void`
+
+Set a new value for the current memory space.
+
+Pass in `true` to run the operation as a microtask (returns a promise).
+
+#### `setWith()`
+
+`(callback: (data: AcceptableDataType) => AcceptableDataType)` => `void`
+
+Set a new state with a callback function taking in the previous data and returning the new data to be written to memory.
+
 ## License
+
+MIT
