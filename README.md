@@ -115,7 +115,7 @@ To get a full list of the configurations supported in the **options** property, 
 
 ## ThreadzAPI
 
-The `declare()` function returns an instance of the `Threadz` API, off of which your workers can be called. During initialization, declaration functions are mapped into the `threadzAPI.workers` property, where they can be referenced by the names used in the original declarations. Using the declarations in the above section, this code would be valid:
+The `declare()` function returns an instance of `ThreadzAPI`, off of which your workers can be called. During initialization, declaration functions are mapped into the `threadzAPI.workers` property, where they can be referenced by the names used in the original declarations. Using the declarations in the above section, this code would be valid:
 
 ```TypeScript
 // index.ts
@@ -282,7 +282,7 @@ Returns a promise which resolves/rejects once the worker has succeeded, thrown a
 
 The data the promise resolves with is the return value of the original declaration function.
 
-#### `on`
+#### `on()`
 
 `(callback: Function)` => `void`
 
@@ -337,7 +337,7 @@ Retrieve the name, location, and arguments of the next worker in the queue to be
 
 If `true`, the ThreadzWorkerPool is not currently running any workers and the queue is empty.
 
-#### `on`
+#### `on()`
 
 `(callback: Function)` => `void`
 
