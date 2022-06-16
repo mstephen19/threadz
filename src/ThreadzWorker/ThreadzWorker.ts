@@ -110,6 +110,8 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
      *
      * @returns A promise of the return value of the original declaration function
      *
+     * **NOTE:** The promise will reject if the worker throws an error or is aborted! If you just want to wait for it to finish, use the `worker.justWaitFor()` method instead.
+     *
      * @example
      * const data = await worker.waitFor();
      *
@@ -120,6 +122,19 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
             this.on('success', (data) => resolve(data));
             this.on('error', (error) => reject(error));
             this.on('aborted', (message) => reject(new MyError(ERROR_CONFIG(`Worker aborted with message: ${message}`))));
+        });
+    }
+
+    /**
+     * Just wait for the worker to finish. Doesn't reject the promise if an error is thrown or the worker is aborted.
+     *
+     * @returns Promise
+     */
+    justWaitFor(): Promise<void> {
+        return new Promise((resolve) => {
+            this.on('success', () => resolve());
+            this.on('error', () => resolve());
+            this.on('aborted', () => resolve());
         });
     }
 }

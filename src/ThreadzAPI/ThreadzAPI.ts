@@ -102,7 +102,7 @@ export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmit
 
             worker.on('success', (data) => {
                 this.emit('workerDone', { name, args });
-                resolve(data as A);
+                resolve(data as unknown as A);
             });
 
             worker.on('aborted', (data) => {
