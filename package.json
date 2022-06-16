@@ -1,10 +1,11 @@
 {
     "name": "threadz",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "description": "A high-level abstraction for multi-threading in Node.js and sharing memory.",
     "main": "dist/index.js",
     "scripts": {
-        "test": "jest"
+        "test": "jest",
+        "build": "npm t && tsc && echo \"Build succeeded.\""
     },
     "repository": {
         "type": "git",

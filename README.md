@@ -215,6 +215,23 @@ Set the options for the worker's run with a callback. Overrides any options defi
 
 Add a message port to the worker to be accessed by [`workerTools.sendCommunication`](#workertools) and `workerTools.onCommunication`.
 
+**Example:**
+
+```TypeScript
+import { MessageChannel } from 'worker_threads';
+import api from './declarations';
+
+(async () => {
+    const { port1, port2 } = new MessageChannel();
+
+    const worker = api.interactWith('test').addMessagePort(port2).go();
+
+    port1.on('message', (data) => console.log(data));
+
+    await worker.waitFor();
+})();
+```
+
 #### `go()`
 
 `()` => [`ThreadzWorker`](#threadzworker)
