@@ -15,6 +15,7 @@ A feature rich and scalable general-purpose multi-threading library that makes i
 -   [Example](#example)
 -   [`declare`](#declare)
 -   [ThreadzAPI](#threadzapi)
+-   [`merge`](#merge)
 -   [Interact API](#interact-api)
 -   [`ThreadzWorker`](#threadzworker)
 -   [ThreadzPool](#threadzpool)
@@ -160,6 +161,49 @@ import api from './declarations';
     -   Pass in the name of a worker on the `ThreadzAPI` instance to create an interaction session for that worker with the `Interact` API.
 -   **`on()`**: `(callback: Function)` => `void`
     -   Supports the `workerQueued` and `workerDone` methods.
+
+## `merge`
+
+`(instances: ThreadzAPI[])` => `Declarations`
+
+The `merge` function is a simple function that accepts an array of ThreadzAPI instances returned by the `declare` function and returns a new declarations object containing all declarations from each instance provided in the array.
+
+> **Note:** `merge` does **not** return a ThreadzAPI instance like `declare!` It returns a set of declarations to be re-declared.
+
+**Example:**
+
+**declarations.ts**
+
+```TypeScript
+import { declare, merge } from 'threadz';
+
+const math = declare({
+    add5: {
+        worker: (num1: number) => num1 + 5,
+    },
+});
+
+const logging = declare({
+    helloWorld: {
+        worker: () => 'hello world',
+    },
+});
+
+export default declare(merge([math, logging]));
+```
+
+**index.ts**
+
+```TypeScript
+import api from './declarations';
+
+(async () => {
+    await api.workers.add5(5);
+    await api.workers.helloWorld();
+})();
+```
+
+> **Note:** if you are only using the `declare` function to create a ThreadzAPI instance with the sole intention of using it later in the `merge` function to be re-declared, it does not have to be the default export of the file it is in.
 
 ## Interact API
 
@@ -473,7 +517,7 @@ The byte length of the stored Uint8Array.
 
 This is one of the most important methods on the `SharedMemory` API. Instances cannot be directly send to workers via parameters or messages, so they must be converted into `SharedMemoryTransferObjects`s using the `sharedMemory.transfer()` function.
 
-See this example:
+**Example:**
 
 **declarations.ts**:
 

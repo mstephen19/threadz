@@ -107,7 +107,6 @@ export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmit
 
             worker.on('aborted', (data) => {
                 this.emit('workerDone', { name, args });
-                // @ts-ignore
                 reject(new MyError(ERROR_CONFIG(`Worker was aborted with message: ${data}`)));
             });
 
