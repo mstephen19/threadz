@@ -52,10 +52,42 @@ export class Communicate extends TypedEmitter<CommunicateEvents> {
 
     /**
      *
+     * Pass in two Interact API instances to automatically create and add message ports to them.
+     *
      * @param instances Two Interact API instances
-     * @param options If `autoClosePorts` is set to `false`, the ports will not automatically be closed after the workers finish.
+     * @param options If `autoClosePorts` is set to `true`, the ports will automatically be closed after the workers finish.
+     *
+     * @example
+     * import { Communicate } from 'threadz';
+     * import api from './declarations';
+     *
+     * const add5 = api.interactWith('add5').args(10);
+     * const helloWorld = api.interactWith('helloWorld');
+     *
+     * Communicate.between([add5, helloWorld]);
+     *
+     * add5.go();
+     * helloWorld.go();
      */
     static between(instances: [Interact, Interact], { autoClosePorts }?: { autoClosePorts?: boolean }): Communicate;
+    /**
+     * Tell `Communicate` which ports to add to which `Interact` instances.
+     *
+     * @param instances An object with `port1` and `port2` properties, each containing an array of `Interact` instances.
+     * @param options If `autoClosePorts` is set to `true`, the ports will automatically be closed after the workers finish.
+     *
+     * @example
+     * import { Communicate } from 'threadz';
+     * import api from './declarations';
+     *
+     * const add5 = api.interactWith('add5').args(10);
+     * const helloWorld = api.interactWith('helloWorld');
+     *
+     * Communicate.between({ port1: [add5], port2: [helloWorld] });
+     *
+     * add5.go();
+     * helloWorld.go();
+     */
     static between(instances: { port1: Interact[]; port2: Interact[] }, { autoClosePorts }?: { autoClosePorts?: boolean }): Communicate;
     static between(
         instances: { port1: Interact[]; port2: Interact[] } | [Interact, Interact],
@@ -75,7 +107,7 @@ export class Communicate extends TypedEmitter<CommunicateEvents> {
                 throw new MyError(ERROR_CONFIG('Each item in the array must be an Interact API instance!'));
             }
 
-            return new Communicate({ port1: [instances[0]], port2: [instances[1]] }, { autoClosePorts: autoClosePorts ?? true });
+            return new Communicate({ port1: [instances[0]], port2: [instances[1]] }, { autoClosePorts: autoClosePorts ?? false });
         }
 
         // If the object doesn't have both of these properties, throw an error
@@ -88,9 +120,20 @@ export class Communicate extends TypedEmitter<CommunicateEvents> {
             throw new MyError(ERROR_CONFIG('Must provide at least one Interact API instance in both the port1 and port2 arrays!'));
         }
 
-        return new Communicate(instances, { autoClosePorts: autoClosePorts ?? true });
+        return new Communicate(instances, { autoClosePorts: autoClosePorts ?? false });
     }
 
+    /**
+     * 
+     * @returns `MessageChannel`
+     */
+    static newMessageChannel() {
+        return new MessageChannel();
+    }
+
+    /**
+     * Close `port1` and `port2`
+     */
     closePorts() {
         this.port1.close();
         this.port2.close();

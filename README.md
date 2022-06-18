@@ -17,6 +17,7 @@ A feature rich and scalable general-purpose multi-threading library that makes i
 -   [ThreadzAPI](#threadzapi)
 -   [`merge`](#merge)
 -   [Interact API](#interact-api)
+-   [Communicate API](#communicate-api)
 -   [`ThreadzWorker`](#threadzworker)
 -   [ThreadzPool](#threadzpool)
 -   [workerTools](#workertools)
@@ -306,6 +307,41 @@ Create the worker and queue it up in the ThreadzPool to be run. Returns a `Threa
 -   **`onAbort()`**
     -   Pass a function to run whenever the worker is aborted.
     -   A worker can only be aborted with the [`workerTools.abort()`](#workertools) and `workerTools.abortOnTimeout()` functions.
+
+## Communicate API
+
+The `Communicate` class is a simple class that acts as a Threadz-specific wrapper for the [`MessageChannel` class](https://nodejs.org/api/worker_threads.html#class-messagechannel) from the `worker_threads` module in Node.js. Pass in [`Interact`](#interact-api) instances and automatically create 
+
+```TypeScript
+import { Communicate } from 'threadz';
+import api from './declarations';
+
+const add5 = api.interactWith('add5').args(10);
+const helloWorld = api.interactWith('helloWorld');
+
+const communicate = Communicate.between([add5, helloWorld]);
+
+add5.go();
+helloWorld.go();
+
+communicate.on('message', (data) => console.log(data));
+
+communicate.closePorts();
+```
+
+In the `between` static method, you can either pass in a tuple of two `Interact` instances, or an object with `port1` and `port2` keys, each containing an array of `Interact` instances. The instances under each key will automatically be passed the corresponding port.
+
+```TypeScript
+// Instead of this
+const { port1, port2 } = new MessageChannel();
+add5.addMessagePort(port1);
+helloWorld.addMessagePort(port2);
+
+// Communicate allows you to do this instead
+const communicate = Communicate.between([add5, helloWorld]);
+```
+
+This becomes more useful when trying to create communications between a larger number of workers.
 
 ## `ThreadzWorker`
 
