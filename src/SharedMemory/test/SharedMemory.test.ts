@@ -3,9 +3,9 @@ import { SharedMemoryTransferObject } from '../types';
 
 describe('SharedMemory', () => {
     describe('from', () => {
-        it('Should return undefined if nothing is provided.', () => {
+        it('Should throw if nothing is provided.', () => {
             // @ts-ignore
-            expect(SharedMemory.from()).not.toBeDefined();
+            expect(() => SharedMemory.from()).toThrow();
         });
 
         it('Should return a new SharedMemory instance when provided a state and options.', () => {
