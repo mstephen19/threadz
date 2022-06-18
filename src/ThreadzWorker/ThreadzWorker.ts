@@ -87,7 +87,9 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
      * worker.setPriority(false);
      */
     setPriority(priority: boolean | 1 | 0) {
-        if (typeof priority !== 'boolean' && priority !== 1 && priority !== 0) return;
+        if (typeof priority !== 'boolean' && priority !== 1 && priority !== 0) {
+            throw new MyError(ERROR_CONFIG('Must pass either a boolean or a 0/1 to the setPriority function.'));
+        }
         if (this.running) return;
 
         this.priority = !!priority;
