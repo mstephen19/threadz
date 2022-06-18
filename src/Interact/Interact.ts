@@ -1,4 +1,5 @@
 import { isMainThread, MessagePort } from 'worker_threads';
+import { TypedEmitter } from 'tiny-typed-emitter';
 import { ThreadzWorker } from '../ThreadzWorker';
 import { MyError } from '../Errors';
 import { ERROR_CONFIG } from './consts';
@@ -8,13 +9,13 @@ import type { WorkerOptions } from '../declare/types';
 import type { WorkerData } from '../worker/types';
 import type { MappedWorkerFunction, ModifiedMappedWorkerFunction } from '../ThreadzAPI/types';
 import type { ThreadzWorkerEvents } from '../ThreadzWorker/types';
-import type { DeepUnPromisify } from './types';
+import type { DeepUnPromisify, InteractEvents } from './types';
 import type { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory';
 
 /**
  * Use this API to interact with a worker returned by ThreadzAPI by sending and receiving messages back and forth.
  */
-export class Interact<T extends MappedWorkerFunction> {
+export class Interact<T extends MappedWorkerFunction = MappedWorkerFunction> extends TypedEmitter<InteractEvents> {
     private priority: boolean;
     private options: WorkerOptions;
     private workerData: WorkerData;
@@ -25,6 +26,8 @@ export class Interact<T extends MappedWorkerFunction> {
     private onStartCallbacks: ThreadzWorkerEvents['started'][];
 
     private constructor(worker: T) {
+        super();
+
         const { _name, _location, _options, _priority } = worker as ModifiedMappedWorkerFunction<T>;
 
         this.workerData = {
@@ -212,6 +215,10 @@ export class Interact<T extends MappedWorkerFunction> {
         this.onSuccessCallbacks.forEach((callback) => worker.on('success', callback));
         this.onAbortCallbacks.forEach((callback) => worker.on('aborted', callback));
         this.onStartCallbacks.forEach((callback) => worker.on('started', callback));
+
+        worker.on('success', () => this.emit('workerFinished'));
+        worker.on('error', () => this.emit('workerFinished'));
+        worker.on('success', () => this.emit('workerFinished'));
 
         return worker;
     }
