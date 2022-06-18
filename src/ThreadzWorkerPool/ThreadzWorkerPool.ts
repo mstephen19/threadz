@@ -124,6 +124,8 @@ export class ThreadzWorkerPool extends TypedEmitter<ThreadzWorkerPoolEvents> {
                     break;
             }
         }
+
+        throw new MyError(ERROR_CONFIG('Must pass either a number or a MaxConcurrencyOptions value into the setMaxConcurrency function.'));
     }
 
     /**

@@ -48,7 +48,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
     ): SharedMemory<T extends SharedMemoryTransferObject<infer A> ? A : AcceptableDataType>;
     static from<T extends FromArgumentType>(state: T, { sizeMb }: FromOptions = { sizeMb: 0.001 }) {
         // Don't allow undefined values
-        if (state === undefined) return;
+        if (state === undefined) throw new MyError(ERROR_CONFIG('Must provide an initial state.'));
 
         // In the case that someone tries to pass a SharedMemory instance to
         // this function, just return that SharedMemory instance
