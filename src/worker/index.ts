@@ -2,7 +2,7 @@ import { parentPort, workerData } from 'worker_threads';
 import { SUCCESS_PAYLOAD, ERROR_PAYLOAD } from './consts';
 
 import type { WorkerData } from './types';
-import type { ThreadzAPI } from '../ThreadzAPI';
+import { ThreadzAPI } from '../ThreadzAPI';
 import type { Declarations } from '../declare/types';
 
 const main = async () => {
@@ -17,6 +17,10 @@ const main = async () => {
 
         if (!api.declarations?.[name]) {
             throw new Error('There is no worker by this name in the specified declarations file.');
+        }
+
+        if (!(api instanceof ThreadzAPI)) {
+            throw new Error('The default export of your declarations file must be a ThreadzAPI instance.')
         }
 
         const result = await api?.declarations?.[name]?.worker(...args);

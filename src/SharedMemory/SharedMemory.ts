@@ -67,7 +67,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
 
             return new SharedMemory(byteArray);
         } catch (error) {
-            throw new MyError(ERROR_CONFIG(`failed to encode data: ${(error as Error)?.message}`));
+            throw new MyError(ERROR_CONFIG(`Failed to encode data: ${(error as Error)?.message}`));
         }
     }
 
@@ -118,7 +118,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
             return Promise.resolve()
                 .then(() => decodeBytes<T>(this.byteArray))
                 .catch((error) => {
-                    throw new MyError(ERROR_CONFIG(`failed to decode data: ${(error as Error)?.message}`));
+                    throw new MyError(ERROR_CONFIG(`Failed to decode data: ${(error as Error)?.message}`));
                 });
         }
 
@@ -127,7 +127,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
             const decoded = decodeBytes<T>(this.byteArray);
             return decoded;
         } catch (error) {
-            throw new MyError(ERROR_CONFIG(`failed to decode data: ${(error as Error)?.message}`));
+            throw new MyError(ERROR_CONFIG(`Failed to decode data: ${(error as Error)?.message}`));
         }
     }
 
@@ -153,7 +153,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
             return Promise.resolve()
                 .then(() => wipeUsedBytes(this.byteArray))
                 .catch((error) => {
-                    throw new MyError(ERROR_CONFIG(`failed to wipe: ${(error as Error)?.message}`));
+                    throw new MyError(ERROR_CONFIG(`Failed to wipe: ${(error as Error)?.message}`));
                 });
         }
 
@@ -161,7 +161,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
         try {
             wipeUsedBytes(this.byteArray);
         } catch (error) {
-            throw new MyError(ERROR_CONFIG(`failed to wipe: ${(error as Error)?.message}`));
+            throw new MyError(ERROR_CONFIG(`Failed to wipe: ${(error as Error)?.message}`));
         }
     }
 
@@ -187,7 +187,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
             return Promise.resolve()
                 .then(() => wipeUsedBytesAndSet(data, this.byteArray))
                 .catch((error) => {
-                    throw new MyError(ERROR_CONFIG(`failed to set new value: ${(error as Error)?.message}`));
+                    throw new MyError(ERROR_CONFIG(`Failed to set new value: ${(error as Error)?.message}`));
                 });
         }
 
@@ -195,7 +195,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
         try {
             wipeUsedBytesAndSet(data, this.byteArray);
         } catch (error) {
-            throw new MyError(ERROR_CONFIG(`failed to set new value: ${(error as Error)?.message}`));
+            throw new MyError(ERROR_CONFIG(`Failed to set new value: ${(error as Error)?.message}`));
         }
     }
 
@@ -222,7 +222,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
             // Set the new state
             wipeUsedBytesAndSet(state, this.byteArray);
         } catch (error) {
-            throw new MyError(ERROR_CONFIG(`failed when setting state with previous: ${(error as Error)?.message}`));
+            throw new MyError(ERROR_CONFIG(`Failed when setting state with previous: ${(error as Error)?.message}`));
         }
     }
 }

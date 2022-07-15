@@ -102,30 +102,30 @@ export class ThreadzWorkerPool extends TypedEmitter<ThreadzWorkerPoolEvents> {
 
         // If the value is anything other than a number, check if it's included in the
         // MaxConcurrencyOptions. if so, run the corresponding calculation.
-        if (Object.values(MaxConcurrencyOptions).some((option) => option === value)) {
-            switch (value) {
-                case MaxConcurrencyOptions.ONE_FOURTH:
-                    this.max = Math.round(this.cpus / 4);
-                    break;
-                case MaxConcurrencyOptions.ONE_HALF:
-                    this.max = Math.round(this.cpus / 2);
-                    break;
-                case MaxConcurrencyOptions.THREE_FOURTHS:
-                    this.max = Math.round((this.cpus * 3) / 4);
-                    break;
-                case MaxConcurrencyOptions.ONE_HUNDRED_PERCENT:
-                    this.max = this.cpus;
-                    break;
-                case MaxConcurrencyOptions.TWO_HUNDRED_PERCENT:
-                    this.max = this.cpus * 2;
-                    break;
-                case MaxConcurrencyOptions.FOUR_HUNDRED_PERCENT:
-                    this.max = this.cpus * 4;
-                    break;
-            }
+        switch (value) {
+            case MaxConcurrencyOptions.ONE_FOURTH:
+                this.max = Math.round(this.cpus / 4);
+                break;
+            case MaxConcurrencyOptions.ONE_HALF:
+                this.max = Math.round(this.cpus / 2);
+                break;
+            case MaxConcurrencyOptions.THREE_FOURTHS:
+                this.max = Math.round((this.cpus * 3) / 4);
+                break;
+            case MaxConcurrencyOptions.ONE_HUNDRED_PERCENT:
+                this.max = this.cpus;
+                break;
+            case MaxConcurrencyOptions.TWO_HUNDRED_PERCENT:
+                this.max = this.cpus * 2;
+                break;
+            case MaxConcurrencyOptions.FOUR_HUNDRED_PERCENT:
+                this.max = this.cpus * 4;
+                break;
+            default:
+                throw new MyError(
+                    ERROR_CONFIG('Must pass either a number or a MaxConcurrencyOptions value into the setMaxConcurrency function.')
+                );
         }
-
-        throw new MyError(ERROR_CONFIG('Must pass either a number or a MaxConcurrencyOptions value into the setMaxConcurrency function.'));
     }
 
     /**

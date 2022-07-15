@@ -2,7 +2,7 @@
 
 ![npm](https://img.shields.io/npm/v/threadz) [![MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/mstephen19/threadz/blob/main/LICENSE) ![npm](https://img.shields.io/npm/dw/threadz)
 
-![TypeScript](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label) [![mstephen19](https://circleci.com/gh/mstephen19/threadz.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/threadz) [![GitHub issues](https://img.shields.io/github/issues/mstephen19/threadz)](https://github.com/mstephen19/threadz/issues)
+![TypeScript](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label) [![CircleCI](https://circleci.com/gh/mstephen19/threadz.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/threadz) [![GitHub issues](https://img.shields.io/github/issues/mstephen19/threadz)](https://github.com/mstephen19/threadz/issues)
 
 ![Logo](https://i.imgur.com/L7158yF.jpg)
 
