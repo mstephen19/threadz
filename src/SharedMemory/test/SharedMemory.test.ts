@@ -59,7 +59,7 @@ describe('SharedMemory', () => {
         });
 
         it('Should return a promise when provided "true" parameter.', () => {
-            expect(instance.get(true)).toBeInstanceOf(Promise);
+            expect(SharedMemory.from(instance.transfer()).get(true)).toBeInstanceOf(Promise);
         });
 
         it('Should run as a microtask and return the current state at the end of the event loop.', async () => {
@@ -117,6 +117,8 @@ describe('SharedMemory', () => {
         });
 
         it("Should set the state based on the callback function's return value.", () => {
+            console.log(instance.get());
+
             expect(instance.get()).toEqual([1, 2, 3, 4, 5]);
         });
     });

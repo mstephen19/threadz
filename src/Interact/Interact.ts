@@ -138,7 +138,7 @@ export class Interact<T extends MappedWorkerFunction = MappedWorkerFunction> ext
      */
     addMessagePort(port: MessagePort) {
         this.workerData.port = port;
-        this.setOptions({ ...this.options, transferList: [...(this.options.transferList ? this.options.transferList : []), port] });
+        this.setOptions({ ...this.options, transferList: [...(this.options.transferList || []), port] });
         return this;
     }
 
@@ -147,7 +147,9 @@ export class Interact<T extends MappedWorkerFunction = MappedWorkerFunction> ext
      */
     onMessage<T extends AcceptableDataType>(callback: ThreadzWorkerEvents<unknown, T>['message']): void;
     onMessage<T extends SharedMemoryTransferObject>(callback: ThreadzWorkerEvents<unknown, T>['message']): void;
-    onMessage<T extends AcceptableDataType = AcceptableDataType>(callback: ThreadzWorkerEvents<unknown, T | SharedMemoryTransferObject>['message']) {
+    onMessage<T extends AcceptableDataType = AcceptableDataType>(
+        callback: ThreadzWorkerEvents<unknown, T | SharedMemoryTransferObject>['message']
+    ) {
         if (typeof callback === 'function') {
             this.onMessageCallbacks.push(callback);
         }

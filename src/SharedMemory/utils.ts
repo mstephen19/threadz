@@ -8,6 +8,8 @@ export const isSharedMemoryTransferObject = (item: any): item is SharedMemoryTra
     return item?._sharedMemoryByteArray && item._sharedMemoryByteArray instanceof Uint8Array;
 };
 
+export const isNotUndefinedOrNull = <T>(data: T) => data !== undefined && data !== null;
+
 /**
  * Convert megabytes to bytes.
  */

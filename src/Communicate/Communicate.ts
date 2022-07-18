@@ -30,12 +30,12 @@ export class Communicate extends TypedEmitter<CommunicateEvents> {
             return (api: Interact) => {
                 api.addMessagePort(port);
 
-                if (autoClosePorts) {
-                    api.on('workerFinished', () => {
-                        this.finishedWorkers += 1;
-                        if (this.finishedWorkers >= this.totalWorkers) this.closePorts();
-                    });
-                }
+                if (!autoClosePorts) return;
+
+                api.on('workerFinished', () => {
+                    this.finishedWorkers += 1;
+                    if (this.finishedWorkers >= this.totalWorkers) this.closePorts();
+                });
             };
         };
 
@@ -98,6 +98,7 @@ export class Communicate extends TypedEmitter<CommunicateEvents> {
             throw new MyError(ERROR_CONFIG('Must pass in an object or an array!'));
         }
 
+        // * Handle tuple
         if (Array.isArray(instances)) {
             // If it's an array but not a tuple with length of 2, throw
             if (instances.length !== 2) throw new MyError(ERROR_CONFIG('If you provide an array, it must have a length of two!'));
@@ -110,6 +111,7 @@ export class Communicate extends TypedEmitter<CommunicateEvents> {
             return new Communicate({ port1: [instances[0]], port2: [instances[1]] }, { autoClosePorts: autoClosePorts ?? false });
         }
 
+        // * Handle map
         // If the object doesn't have both of these properties, throw an error
         if (!instances?.port1 || !instances?.port2) {
             throw new MyError(ERROR_CONFIG('Options object must contain both port1 and port2 properties!'));
@@ -124,7 +126,7 @@ export class Communicate extends TypedEmitter<CommunicateEvents> {
     }
 
     /**
-     * 
+     *
      * @returns `MessageChannel`
      */
     static newMessageChannel() {

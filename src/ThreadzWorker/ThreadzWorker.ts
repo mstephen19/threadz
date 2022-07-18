@@ -139,4 +139,25 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
             this.on('aborted', () => resolve());
         });
     }
+
+    /**
+     * Opposite of `unref()`, calling `ref()` on a previously `unref()`ed worker does **not** let the program exit if it's the only active handle left (the default behavior). If the worker is `ref()`ed, calling `ref()` again has no effect.
+     */
+    ref() {
+        this.worker.ref();
+    }
+
+    /**
+     * Calling `unref()` on a worker allows the thread to exit if this is the only active handle in the event system. If the worker is already `unref()`ed calling `unref()` again has no effect.
+     */
+    unref() {
+        this.worker.unref();
+    }
+
+    /**
+     * Stop all JavaScript execution in the worker thread as soon as possible. Returns a Promise for the exit code that is fulfilled when the `'exit'` event is emitted.
+     */
+    terminate() {
+        return this.worker.terminate();
+    }
 }

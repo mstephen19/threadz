@@ -25,10 +25,11 @@ export const declare = <T extends Declarations>(declarations: T) => {
 
     const values = Object.values(declarations);
 
-    const isNotValidDeclarations = values.some((declaration) => !declaration?.worker || typeof declaration.worker !== 'function') || !values.length;
+    const areNotValidDeclarations =
+        values.some((declaration) => !declaration?.worker || typeof declaration.worker !== 'function') || !values.length;
 
     // If any declarations don't have a "worker" key, or the "worker" isn't a function
-    if (isNotValidDeclarations) {
+    if (areNotValidDeclarations) {
         throw new MyError(ERROR_CONFIG('Each declaration must have a "worker" property which is a function.'));
     }
 

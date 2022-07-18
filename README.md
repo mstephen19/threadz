@@ -18,28 +18,28 @@ A feature rich and scalable general-purpose multi-threading library that makes i
 
 ## Table of Contents
 
--   [Features](#features)
--   [Installing](#installing)
--   [Example](#example)
--   [`declare`](#declare)
--   [ThreadzAPI](#threadzapi)
--   [`merge`](#merge)
--   [Interact API](#interact-api)
--   [Communicate API](#communicate-api)
--   [`ThreadzWorker`](#threadzworker)
--   [ThreadzPool](#threadzpool)
--   [workerTools](#workertools)
--   [`SharedMemory`](#sharedmemory)
+- [Features](#features)
+- [Installing](#installing)
+- [Example](#example)
+- [`declare`](#declare)
+- [ThreadzAPI](#threadzapi)
+- [`merge`](#merge)
+- [Interact API](#interact-api)
+- [Communicate API](#communicate-api)
+- [`ThreadzWorker`](#threadzworker)
+- [ThreadzPool](#threadzpool)
+- [workerTools](#workertools)
+- [`SharedMemory`](#sharedmemory)
 
 ## Features
 
--   Full TypeScript support + in-editor documentation with JSDoc.
--   Create modular workers without having to create specific worker files.
--   Run operations with true concurrency by using workers in your code as if they were just regular functions that return promises.
--   Automatically manage worker concurrency.
--   Intuitively share memory between workers.
--   Prioritize certain workers over others.
--   Receive descriptive error messages that tell you exactly what you've done wrong.
+- Full TypeScript support + in-editor documentation with JSDoc.
+- Create modular workers without having to create specific worker files.
+- Run operations with true concurrency by using workers in your code as if they were just regular functions that return promises.
+- Automatically manage worker concurrency.
+- Intuitively share memory between workers.
+- Prioritize certain workers over others.
+- Receive descriptive error messages that tell you exactly what you've done wrong.
 
 ## Installing
 
@@ -155,21 +155,21 @@ import api from './declarations';
 
 ### Methods & properties
 
--   **`location`**: _`string`_
-    -   The file location at which the declarations live.
-    -   Tells Threadz how to dynamically import your declarations.
--   **`declarations`**: _[`Declarations`](#declare)_
-    -   The original declarations used to initialize `ThreadsAPI`.
--   **`declarationsCount`**: _`number`_
-    -   The number of declarations on the `ThreadzAPI` instance.
--   **`workers`**: _`MappedWorkers`_
-    -   Declarations mapped into "worker functions" which handle the passing of data, the creation of `Worker` instances, the management of worker concurrency with ThreadzPool, and more.
--   **`threadzPool`**: _[`ThreadzWorkerPool`](#threadzpool)_
-    -   The global `ThreadzWorkerPool` instance being used to manage all workers.
--   **`interactWith()`**: _`(workerName: string)` => [`Interact`](#interact-api)_
-    -   Pass in the name of a worker on the `ThreadzAPI` instance to create an interaction session for that worker with the `Interact` API.
--   **`on()`**: `(callback: Function)` => `void`
-    -   Supports the `workerQueued` and `workerDone` methods.
+- **`location`**: _`string`_
+  - The file location at which the declarations live.
+  - Tells Threadz how to dynamically import your declarations.
+- **`declarations`**: _[`Declarations`](#declare)_
+  - The original declarations used to initialize `ThreadsAPI`.
+- **`declarationsCount`**: _`number`_
+  - The number of declarations on the `ThreadzAPI` instance.
+- **`workers`**: _`MappedWorkers`_
+  - Declarations mapped into "worker functions" which handle the passing of data, the creation of `Worker` instances, the management of worker concurrency with ThreadzPool, and more.
+- **`threadzPool`**: _[`ThreadzWorkerPool`](#threadzpool)_
+  - The global `ThreadzWorkerPool` instance being used to manage all workers.
+- **`interactWith()`**: _`(workerName: string)` => [`Interact`](#interact-api)_
+  - Pass in the name of a worker on the `ThreadzAPI` instance to create an interaction session for that worker with the `Interact` API.
+- **`on()`**: `(callback: Function)` => `void`
+  - Supports the `workerQueued` and `workerDone` methods.
 
 ## `merge`
 
@@ -274,6 +274,8 @@ Set the options for the worker's run with a callback. Overrides any options defi
 
 #### `addMessagePort()`
 
+> This function is documented and readily available; however it is recommended to use the [`Communicate`](#communicate-api) API instead.
+
 `(port: MessagePort)` => `Interact`
 
 Add a message port to the worker to be accessed by [`workerTools.sendCommunication`](#workertools) and `workerTools.onCommunication`.
@@ -303,22 +305,22 @@ Create the worker and queue it up in the ThreadzPool to be run. Returns a `Threa
 
 #### Events
 
--   **`onMessage()`**
-    -   Pass a function to run when a message is received from the worker.
--   **`onFailure()`**
-    -   Pass a function to run when the worker fails and throws an error.
--   **`onSuccess()`**
-    -   Pass a function to run when the worker succeeds and potentially returns a value.
--   **`onStart()`**
-    -   Pass a function to run when the worker starts running.
-    -   This functionality might be useful when dealing with large queues of workers.
--   **`onAbort()`**
-    -   Pass a function to run whenever the worker is aborted.
-    -   A worker can only be aborted with the [`workerTools.abort()`](#workertools) and `workerTools.abortOnTimeout()` functions.
+- **`onMessage()`**
+  - Pass a function to run when a message is received from the worker.
+- **`onFailure()`**
+  - Pass a function to run when the worker fails and throws an error.
+- **`onSuccess()`**
+  - Pass a function to run when the worker succeeds and potentially returns a value.
+- **`onStart()`**
+  - Pass a function to run when the worker starts running.
+  - This functionality might be useful when dealing with large queues of workers.
+- **`onAbort()`**
+  - Pass a function to run whenever the worker is aborted.
+  - A worker can only be aborted with the [`workerTools.abort()`](#workertools) and `workerTools.abortOnTimeout()` functions.
 
 ## Communicate API
 
-The `Communicate` class is a simple class that acts as a Threadz-specific wrapper for the [`MessageChannel` class](https://nodejs.org/api/worker_threads.html#class-messagechannel) from the `worker_threads` module in Node.js. Pass in [`Interact`](#interact-api) instances and automatically create 
+The `Communicate` class is a simple class that acts as a Threadz-specific wrapper for the [`MessageChannel` class](https://nodejs.org/api/worker_threads.html#class-messagechannel) from the `worker_threads` module in Node.js. Pass in [`Interact`](#interact-api) instances and automatically create a `MessageChannel` instance and add the ports to the `Interact` instances with `interact.addMessagePort()`
 
 ```TypeScript
 import { Communicate } from 'threadz';
@@ -409,6 +411,10 @@ Returns a promise that will always resolve when the worker finishes, regardless 
 
 Supports the `message`, `error`, `aborted`, `success`, and `started` events.
 
+#### `ref()`, `unref()`, and `terminate()`
+
+Refer to the [Node.js documentation](https://nodejs.org/api/worker_threads.html#workerunref) for more details.
+
 ## ThreadzPool
 
 The `ThreadzWorkerPool` (importable under the name `ThreadzPool`) is a single global object which implements a queuing system to manage workers and maintain a maximum concurrency.
@@ -441,12 +447,12 @@ Set the maximum concurrency of the ThreadzPool by either specifying how many wor
 
 **`MaxConcurrencyOptions`:**
 
--   `1/4`
--   `1/2`
--   `3/4`
--   `100%`
--   `200%`
--   `400%`
+- `1/4`
+- `1/2`
+- `3/4`
+- `100%`
+- `200%`
+- `400%`
 
 > **Note:** It is recommended to use `MaxConcurrencyOptions` instead of a hardset number.
 
