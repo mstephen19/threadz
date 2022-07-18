@@ -1,13 +1,5 @@
 import { MyError } from '../Errors';
-import {
-    decodeBytes,
-    encodeBytes,
-    isNotUndefinedOrNull,
-    isSharedMemoryTransferObject,
-    megabytesToBytes,
-    wipeUsedBytes,
-    wipeUsedBytesAndSet,
-} from './utils';
+import { decodeBytes, encodeBytes, isSharedMemoryTransferObject, megabytesToBytes, wipeUsedBytes, wipeUsedBytesAndSet } from './utils';
 import { ERROR_CONFIG } from './consts';
 
 import type { AcceptableDataType, SharedMemoryTransferObject, FromArgumentType, FromOptions } from './types';
@@ -124,7 +116,10 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
         if (microtask) {
             // Run as a microtask.
             return Promise.resolve()
-                .then(() => decodeBytes<T>(this.byteArray))
+                .then(() => {
+                    const data = decodeBytes<T>(this.byteArray);
+                    return data;
+                })
                 .catch((error) => {
                     throw new MyError(ERROR_CONFIG(`Failed to decode data: ${(error as Error)?.message}`));
                 });
@@ -159,7 +154,9 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
         // Run as a microtask.
         if (microtask) {
             return Promise.resolve()
-                .then(() => wipeUsedBytes(this.byteArray))
+                .then(() => {
+                    wipeUsedBytes(this.byteArray);
+                })
                 .catch((error) => {
                     throw new MyError(ERROR_CONFIG(`Failed to wipe: ${(error as Error)?.message}`));
                 });

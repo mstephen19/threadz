@@ -11,11 +11,13 @@ export interface ThreadzAPIEvents {
     workerDone: ({ name, args }: { name: string; args: any[] }) => void;
 }
 
-export type MappedWorkers<T extends Declarations> = {
+export type MappedWorkers<T extends Declarations> = Readonly<{
     [K in keyof T]: MappedWorkerFunction<T[K]['worker']>;
-};
+}>;
 
-export type MappedWorkerFunction<T extends DeclarationFunction = DeclarationFunction> = (...args: Parameters<T>) => Promise<DeepUnPromisify<ReturnType<T>>>;
+export type MappedWorkerFunction<T extends DeclarationFunction = DeclarationFunction> = (
+    ...args: Parameters<T>
+) => Promise<DeepUnPromisify<ReturnType<T>>>;
 
 export type ModifiedMappedWorkerFunction<T extends MappedWorkerFunction> = T & {
     _name: string;

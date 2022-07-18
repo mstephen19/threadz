@@ -45,6 +45,7 @@ describe('SharedMemory', () => {
         });
 
         it('The SharedMemoryTransferObject should be immutable.', () => {
+            // @ts-ignore
             const mock = jest.fn((obj: SharedMemoryTransferObject) => (obj._sharedMemoryByteArray = new Uint8Array()));
 
             expect(() => mock(instance.transfer())).toThrowError();
@@ -117,8 +118,6 @@ describe('SharedMemory', () => {
         });
 
         it("Should set the state based on the callback function's return value.", () => {
-            console.log(instance.get());
-
             expect(instance.get()).toEqual([1, 2, 3, 4, 5]);
         });
     });
