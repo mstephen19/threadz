@@ -8,9 +8,9 @@
 
 A feature rich and scalable general-purpose multi-threading library that makes it easy to utilize all of a given machine's resources in Node.js.
 
-**New in v2.1.0**
+**New in v2.1.4**
 
-- Small bug fixes
+- Caching in `SharedMemory` to avoid
 - Better error handling for certain edge cases
 - Improved types
 - [Communicate API](#communicate-api) to send messages between workers.

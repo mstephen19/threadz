@@ -1,6 +1,6 @@
 {
     "name": "threadz",
-    "version": "2.1.3",
+    "version": "2.1.4",
     "description": "A high-level abstraction for multi-threading and sharing memory in Node.js.",
     "main": "dist/index.js",
     "scripts": {

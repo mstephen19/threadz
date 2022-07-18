@@ -17,11 +17,9 @@ import type { AcceptableDataType, SharedMemoryTransferObject, FromArgumentType, 
  */
 export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
     private byteArray: Uint8Array;
-    private cache: T;
 
-    private constructor(state: Uint8Array, cacheData?: T) {
+    private constructor(state: Uint8Array) {
         this.byteArray = state;
-        if (isNotUndefinedOrNull(cacheData)) this.cache = cacheData;
     }
 
     /**
@@ -75,7 +73,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
 
             encodeBytes(state, byteArray);
 
-            return new SharedMemory(byteArray, state);
+            return new SharedMemory(byteArray);
         } catch (error) {
             throw new MyError(ERROR_CONFIG(`Failed to encode data: ${(error as Error)?.message}`));
         }
@@ -123,16 +121,10 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
      */
     get(microtask: true): Promise<T>;
     get(microtask?: boolean) {
-        if (isNotUndefinedOrNull(this.cache)) return this.cache;
-
         if (microtask) {
             // Run as a microtask.
             return Promise.resolve()
-                .then(() => {
-                    const data = decodeBytes<T>(this.byteArray);
-                    this.cache = data;
-                    return data;
-                })
+                .then(() => decodeBytes<T>(this.byteArray))
                 .catch((error) => {
                     throw new MyError(ERROR_CONFIG(`Failed to decode data: ${(error as Error)?.message}`));
                 });
@@ -141,7 +133,6 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
         // Run normally.
         try {
             const decoded = decodeBytes<T>(this.byteArray);
-            this.cache = decoded;
             return decoded;
         } catch (error) {
             throw new MyError(ERROR_CONFIG(`Failed to decode data: ${(error as Error)?.message}`));
@@ -168,10 +159,7 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
         // Run as a microtask.
         if (microtask) {
             return Promise.resolve()
-                .then(() => {
-                    wipeUsedBytes(this.byteArray);
-                    this.cache = null;
-                })
+                .then(() => wipeUsedBytes(this.byteArray))
                 .catch((error) => {
                     throw new MyError(ERROR_CONFIG(`Failed to wipe: ${(error as Error)?.message}`));
                 });
@@ -180,7 +168,6 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
         // Run normally.
         try {
             wipeUsedBytes(this.byteArray);
-            this.cache = null;
         } catch (error) {
             throw new MyError(ERROR_CONFIG(`Failed to wipe: ${(error as Error)?.message}`));
         }
@@ -208,7 +195,6 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
             return Promise.resolve()
                 .then(() => {
                     wipeUsedBytesAndSet(data, this.byteArray);
-                    this.cache = data;
                 })
                 .catch((error) => {
                     throw new MyError(ERROR_CONFIG(`Failed to set new value: ${(error as Error)?.message}`));
@@ -218,7 +204,6 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
         // Run normally.
         try {
             wipeUsedBytesAndSet(data, this.byteArray);
-            this.cache = data;
         } catch (error) {
             throw new MyError(ERROR_CONFIG(`Failed to set new value: ${(error as Error)?.message}`));
         }
@@ -239,14 +224,13 @@ export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
     setWith<A extends T>(callback: (data: T) => A) {
         try {
             // Grab the previous state
-            const prev = isNotUndefinedOrNull(this.cache) ? this.cache : decodeBytes<T>(this.byteArray);
+            const prev = decodeBytes<T>(this.byteArray);
 
             // Run the callback
             const state = callback(prev);
 
             // Set the new state
             wipeUsedBytesAndSet(state, this.byteArray);
-            this.cache = state;
         } catch (error) {
             throw new MyError(ERROR_CONFIG(`Failed when setting state with previous: ${(error as Error)?.message}`));
         }
