@@ -514,7 +514,7 @@ If you have passed a message port to the worker (using the [`Interact` API](#int
 
 #### `onCommunication()`
 
-If you have passed a message port to the worker (using the Interact API), list for messages on the port with this function by passing a callback which takes in the received data.
+If you have passed a message port to the worker (using the Interact API), listen for messages on the port with this function by passing a callback which takes in the received data.
 
 #### `threadID()`
 
