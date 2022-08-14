@@ -12,7 +12,9 @@ const sendCommunication = <T extends AcceptableDataType>(data: T | SharedMemoryT
 
     if (!port) {
         throw new MyError(
-            ERROR_CONFIG("Can't find a message port to communicate on! Did you pass a MessagePort instance into the worker with the Interact API?")
+            ERROR_CONFIG(
+                "Can't find a message port to communicate on! Did you pass a MessagePort instance into the worker with the Interact API?"
+            )
         );
     }
 
@@ -29,11 +31,39 @@ function onCommunication<T extends AcceptableDataType = AcceptableDataType>(call
 
     if (!port) {
         throw new MyError(
-            ERROR_CONFIG("Can't find a message port to listen on! Did you pass a MessagePort instance into the worker with the Interact API?")
+            ERROR_CONFIG(
+                "Can't find a message port to listen on! Did you pass a MessagePort instance into the worker with the Interact API?"
+            )
         );
     }
 
     port.on('message', callback);
+}
+
+/**
+ * If you have passed a message port to the worker (using the Interact API), list for messages on the port with this function.
+ */
+async function waitForCommunication<T extends AcceptableDataType>(callback: (data: T) => void): Promise<void>;
+async function waitForCommunication<T extends SharedMemoryTransferObject>(callback: (data: T) => void): Promise<void>;
+async function waitForCommunication<T extends AcceptableDataType = AcceptableDataType>(
+    callback: (data: T | SharedMemoryTransferObject) => void
+) {
+    const { port } = workerData as WorkerData;
+
+    if (!port) {
+        throw new MyError(
+            ERROR_CONFIG(
+                "Can't find a message port to listen on! Did you pass a MessagePort instance into the worker with the Interact API?"
+            )
+        );
+    }
+
+    return new Promise((resolve) => {
+        port.on('message', async (data) => {
+            await callback(data);
+            resolve(true);
+        });
+    });
 }
 
 /**
@@ -133,6 +163,7 @@ const workerTools = {
     threadID,
     sendCommunication,
     onCommunication,
+    waitForCommunication,
 };
 
 export { workerTools };
