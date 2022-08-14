@@ -1,5 +1,5 @@
-import { SharedMemory } from './SharedMemory';
-import { AcceptableDataType, SharedMemoryTransferObject } from './types';
+import { SharedMemory } from './SharedMemory.js';
+import { AcceptableDataType, SharedMemoryTransferObject } from './types.js';
 
 export default SharedMemory;
 export { AcceptableDataType, SharedMemoryTransferObject };

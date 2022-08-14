@@ -1,16 +1,17 @@
 import { isMainThread, MessagePort } from 'worker_threads';
 import { TypedEmitter } from 'tiny-typed-emitter';
-import { ThreadzWorker } from '../ThreadzWorker';
-import { MyError } from '../Errors';
-import { ERROR_CONFIG } from './consts';
-import ThreadzWorkerPool from '../ThreadzWorkerPool';
 
-import type { WorkerOptions } from '../declare/types';
-import type { WorkerData } from '../worker/types';
-import type { MappedWorkerFunction, ModifiedMappedWorkerFunction } from '../ThreadzAPI/types';
-import type { ThreadzWorkerEvents } from '../ThreadzWorker/types';
-import type { DeepUnPromisify, InteractEvents } from './types';
-import type { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory';
+import { ThreadzWorker } from '../ThreadzWorker/index.js';
+import { MyError } from '../Errors/index.js';
+import { ERROR_CONFIG } from './consts.js';
+import ThreadzWorkerPool from '../ThreadzWorkerPool/index.js';
+
+import type { WorkerOptions } from '../declare/types.js';
+import type { WorkerData } from '../worker/types.js';
+import type { MappedWorkerFunction, ModifiedMappedWorkerFunction } from '../ThreadzAPI/types.js';
+import type { ThreadzWorkerEvents } from '../ThreadzWorker/types.js';
+import type { DeepUnPromisify, InteractEvents } from './types.js';
+import type { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory/index.js';
 
 /**
  * Use this API to interact with a worker returned by ThreadzAPI by sending and receiving messages back and forth.

@@ -1,8 +1,8 @@
-import { MyError } from '../Errors';
-import { decodeBytes, encodeBytes, isSharedMemoryTransferObject, megabytesToBytes, wipeUsedBytes, wipeUsedBytesAndSet } from './utils';
-import { ERROR_CONFIG } from './consts';
+import { MyError } from '../Errors/index.js';
+import { decodeBytes, encodeBytes, isSharedMemoryTransferObject, megabytesToBytes, wipeUsedBytes, wipeUsedBytesAndSet } from './utils.js';
+import { ERROR_CONFIG } from './consts.js';
 
-import type { AcceptableDataType, SharedMemoryTransferObject, FromArgumentType, FromOptions } from './types';
+import type { AcceptableDataType, SharedMemoryTransferObject, FromArgumentType, FromOptions } from './types.js';
 
 /**
  * Use this API to allocate a certain amount of memory to be shared between different threads.

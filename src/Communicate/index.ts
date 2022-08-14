@@ -1,3 +1,3 @@
-import { Communicate } from './Communicate';
+import { Communicate } from './Communicate.js';
 
 export { Communicate };

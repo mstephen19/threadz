@@ -1,5 +1,5 @@
 import { TextEncoder, TextDecoder } from 'util';
-import { AcceptableDataType, SharedMemoryTransferObject } from './types';
+import { AcceptableDataType, SharedMemoryTransferObject } from './types.js';
 
 /**
  * Checks if the item passed in is a SharedMemoryTransferObject.

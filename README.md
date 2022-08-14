@@ -8,17 +8,19 @@
 
 A feature rich and scalable general-purpose multi-threading library that makes it easy to utilize all of a given machine's resources in Node.js.
 
-**New in v2.1.6**
+## New in v2.1.6
 
 - [`waitForCommunication`](#waitforcommunication) entirely reworked.
 
-**New in v2.1.x**
+## New in v2.1.x
 
-- Small bug fixes (and a couple of big ones)
-- Better error handling for certain edge cases
+- Small bug fixes (and a couple of big ones).
+- Better error handling for certain edge cases.
 - [Communicate API](#communicate-api) to send messages between workers.
 - [`merge`](#merge) function to merge declarations into one set.
-- Improved types
+- Improved TypeScript support.
+
+> **NOTE:** Threadz does not work with TS-Node, and only supports CommonJS at the moment. The latter will change in the future.
 
 ## Table of Contents
 

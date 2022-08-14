@@ -1,9 +1,10 @@
 import caller from 'caller-callsite';
-import { MyError } from '../Errors';
-import { ThreadzAPI } from '../ThreadzAPI';
-import { ERROR_CONFIG } from './consts';
 
-import type { Declarations } from './types';
+import { MyError } from '../Errors/index.js';
+import { ThreadzAPI } from '../ThreadzAPI/index.js';
+import { ERROR_CONFIG } from './consts.js';
+
+import type { Declarations } from './types.js';
 
 /**
  *

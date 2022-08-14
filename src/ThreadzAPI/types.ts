@@ -1,5 +1,5 @@
-import type { Declarations, DeclarationFunction, WorkerOptions } from '../declare/types';
-import type { DeepUnPromisify } from '../Interact/types';
+import type { Declarations, DeclarationFunction, WorkerOptions } from '../declare/types.js';
+import type { DeepUnPromisify } from '../Interact/types.js';
 
 export type ThreadzAPIConstructorOptions<T extends Declarations> = {
     readonly location: string;

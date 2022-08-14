@@ -1,11 +1,12 @@
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { MessageChannel } from 'worker_threads';
-import { MyError } from '../Errors';
-import { Interact } from '../Interact';
-import { ERROR_CONFIG } from './consts';
+
+import { MyError } from '../Errors/index.js';
+import { Interact } from '../Interact/index.js';
+import { ERROR_CONFIG } from './consts.js';
 
 import type { MessagePort } from 'worker_threads';
-import type { CommunicateEvents } from './types';
+import type { CommunicateEvents } from './types.js';
 
 /**
  * Communicate between workers using this API.

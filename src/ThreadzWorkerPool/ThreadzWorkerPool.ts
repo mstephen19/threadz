@@ -1,10 +1,11 @@
 import { cpus } from 'os';
-import { MyError } from '../Errors';
-import { ERROR_CONFIG, MaxConcurrencyOptions } from './consts';
-import { ThreadzWorker } from '../ThreadzWorker';
 import { TypedEmitter } from 'tiny-typed-emitter';
 
-import type { MaxConcurrencyOptionsType, ThreadzWorkerPoolEvents } from './types';
+import { MyError } from '../Errors/index.js';
+import { ERROR_CONFIG, MaxConcurrencyOptions } from './consts.js';
+import { ThreadzWorker } from '../ThreadzWorker/index.js';
+
+import type { MaxConcurrencyOptionsType, ThreadzWorkerPoolEvents } from './types.js';
 
 /**
  * The API used by Threadz to manage all ThreadzWorker instances. Only one instance of the ThreadzWorkerPool is created.
