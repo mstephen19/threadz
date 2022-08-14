@@ -1,6 +1,7 @@
 import { Worker, SHARE_ENV, TransferListItem } from 'worker_threads';
 import { TypedEmitter } from 'tiny-typed-emitter';
 import path from 'path';
+import * as url from 'url';
 
 import { MyError } from '../Errors/index.js';
 import { ERROR_CONFIG } from './consts.js';
@@ -54,7 +55,10 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
         if (this.running) return;
         this.emit('started');
 
-        const worker = new Worker(path.join(path.resolve(), '../worker/index.js'), {
+        // @ts-ignore
+        const _dirname = url.fileURLToPath(new URL('.', import.meta.url));
+
+        const worker = new Worker(path.join(_dirname, '../worker/index.js'), {
             ...this.options,
             workerData: this.workerData,
             env: SHARE_ENV,
