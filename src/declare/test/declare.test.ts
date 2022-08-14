@@ -1,6 +1,6 @@
 import path from 'path';
-import { ThreadzAPI } from '../../ThreadzAPI';
-import { declare } from '../declare';
+import { ThreadzAPI } from '../../ThreadzAPI/index.js';
+import { declare } from '../declare.js';
 
 describe('declare', () => {
     it('Should throw an error if no declarations have been passed in.', () => {

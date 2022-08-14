@@ -12,7 +12,7 @@
     },
     "scripts": {
         "test": "jest",
-        "build": "rm -rf dist/* && tsc -p tsconfig.json && tsc -p tsconfig-cjs.json && ts-node scripts/fixup.ts && echo \"Build succeeded.\""
+        "build": "rm -rf dist/* && tsc -p tsconfig-mjs.json && tsc -p tsconfig-cjs.json && ts-node scripts/fixup.ts && echo \"Build succeeded.\""
     },
     "repository": {
         "type": "git",
