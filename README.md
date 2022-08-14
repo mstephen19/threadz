@@ -8,9 +8,9 @@
 
 A feature rich and scalable general-purpose multi-threading library that makes it easy to utilize all of a given machine's resources in Node.js.
 
-**New in v2.1.5**
+**New in v2.1.6**
 
-- [`waitForCommunication`](#waitforcommunication) function now available in `workerTools`
+- [`waitForCommunication`](#waitforcommunication) entirely reworked.
 
 **New in v2.1.x**
 
@@ -522,7 +522,7 @@ If you have passed a message port to the worker (using the Interact API), listen
 
 #### `waitForCommunication()`
 
-Similar to `onCommunication()`, except waits for a communication to be received, runs the callback function, then resolves the promise.
+A function which takes in an assertion callback. The assertion callback takes in the received data and returns a boolean value. If the assertion returns `true`, the promise will resolve.
 
 #### `threadID()`
 

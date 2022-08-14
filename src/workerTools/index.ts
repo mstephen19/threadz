@@ -6,6 +6,9 @@ import { ERROR_CONFIG } from './consts';
 
 /**
  * If you have passed a message port to the worker (using the Interact API), send messages to the port with this function.
+ *
+ * @example
+ * workerTools.sendCommunication('hello world');
  */
 const sendCommunication = <T extends AcceptableDataType>(data: T | SharedMemoryTransferObject, transferList: TransferListItem[] = []) => {
     const { port } = workerData as WorkerData;
@@ -22,7 +25,10 @@ const sendCommunication = <T extends AcceptableDataType>(data: T | SharedMemoryT
 };
 
 /**
- * If you have passed a message port to the worker (using the Interact API), list for messages on the port with this function.
+ * If you have passed a message port to the worker (using the Interact API), listen for messages on the port with this function.
+ *
+ * @example
+ * workerTools.onCommunication<string>((message) => console.log(`received: ${message}`));
  */
 function onCommunication<T extends AcceptableDataType>(callback: (data: T) => void): void;
 function onCommunication<T extends SharedMemoryTransferObject>(callback: (data: T) => void): void;
@@ -41,13 +47,16 @@ function onCommunication<T extends AcceptableDataType = AcceptableDataType>(call
 }
 
 /**
- * If you have passed a message port to the worker (using the Interact API), list for messages on the port with this function.
+ * Accepts a callback which takes in the received data and returns a boolean value. When the callback returns `true`, the promise resolves.
+ *
+ * @example
+ * const data = await workerTools.waiForCommunication<string>((data) => data === 'hello world');
+ *
+ * console.log(data);
  */
-async function waitForCommunication<T extends AcceptableDataType>(callback: (data: T) => void): Promise<void>;
-async function waitForCommunication<T extends SharedMemoryTransferObject>(callback: (data: T) => void): Promise<void>;
-async function waitForCommunication<T extends AcceptableDataType = AcceptableDataType>(
-    callback: (data: T | SharedMemoryTransferObject) => void
-) {
+async function waitForCommunication<T extends AcceptableDataType>(assertion: (data: T) => data is T): Promise<void>;
+async function waitForCommunication<T extends SharedMemoryTransferObject>(assertion: (data: T) => data is T): Promise<void>;
+async function waitForCommunication<T extends AcceptableDataType = AcceptableDataType>(assertion: (data: T) => data is T) {
     const { port } = workerData as WorkerData;
 
     if (!port) {
@@ -60,8 +69,7 @@ async function waitForCommunication<T extends AcceptableDataType = AcceptableDat
 
     return new Promise((resolve) => {
         port.on('message', async (data) => {
-            await callback(data);
-            resolve(true);
+            if (assertion(data)) resolve(data);
         });
     });
 }
@@ -69,7 +77,8 @@ async function waitForCommunication<T extends AcceptableDataType = AcceptableDat
 /**
  * Send a message to be consumed back on the main thread.
  *
- * @example workerTools.sendMessageToParent('hello main thread!')
+ * @example
+ * workerTools.sendMessageToParent('hello main thread!')
  */
 const sendMessageToParent = <T extends AcceptableDataType>(data: T | SharedMemoryTransferObject, transferList: TransferListItem[] = []) => {
     if (isMainThread) {
@@ -88,7 +97,8 @@ const sendMessageToParent = <T extends AcceptableDataType>(data: T | SharedMemor
  *
  * @param callback Function to run any time a message is received from the parent thread.
  *
- * @example workerTools.onParentMessage((data) => console.log(data))
+ * @example
+ * workerTools.onParentMessage((data) => console.log(data))
  */
 function onParentMessage<T extends AcceptableDataType>(callback: (data: T) => void): void;
 function onParentMessage<T extends SharedMemoryTransferObject>(callback: (data: T) => void): void;
@@ -126,9 +136,8 @@ const abort = (message?: string | number) => {
 /**
  * Prevent workers from hanging or running too long by aborting out after a certain amount of time has passed.
  *
- * @param seconds Number of seconds to let the worker continue running before aborting.
- *
- * @example workerTools.abortOnTimeout({ seconds: 120, message: 'Operation took too long' })
+ * @example
+ * workerTools.abortOnTimeout({ seconds: 120, message: 'Operation took too long' })
  */
 const abortOnTimeout = ({ seconds, message }: { seconds: number; message?: string | number }) => {
     if (isMainThread) {
@@ -139,10 +148,10 @@ const abortOnTimeout = ({ seconds, message }: { seconds: number; message?: strin
 };
 
 /**
- * Grab the unique ID of the thread currently being used.
+ * Grab the unique ID of the thread currently being used. Good for creating unique identifiers.
  *
  * @example
- * const myValue = `${data}-${threadID}`
+ * const myValue = `${data}-${threadID()}`
  */
 const threadID = () => {
     if (isMainThread) {
@@ -154,6 +163,17 @@ const threadID = () => {
 
 /**
  * Various tools which can be used within declaration functions.
+ * Do not try to use these function outside of declaration functions. They will throw nasty errors.
+ *
+ * @example
+ * workerTools.sendMessageToParent();
+ * workerTools.onParentMessage();
+ * workerTools.abort();
+ * workerTools.abortOnTimeout();
+ * workerTools.threadID();
+ * workerTools.sendCommunication();
+ * workerTools.onCommunication();
+ * workerTools.waitForCommunication();
  */
 const workerTools = {
     sendMessageToParent,

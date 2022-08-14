@@ -6,6 +6,15 @@ import type { AcceptableDataType, SharedMemoryTransferObject, FromArgumentType, 
 
 /**
  * Use this API to allocate a certain amount of memory to be shared between different threads.
+ *
+ * @example
+ * SharedMemory.from();
+ * instance.transfer();
+ * instance.byteLength
+ * instance.get();
+ * instance.wipe();
+ * instance.set();
+ * instance.setWith();
  */
 export class SharedMemory<T extends AcceptableDataType = AcceptableDataType> {
     private byteArray: Uint8Array;

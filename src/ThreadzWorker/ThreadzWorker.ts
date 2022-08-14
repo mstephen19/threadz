@@ -12,7 +12,17 @@ import type { MappedWorkerFunction } from '../ThreadzAPI/types';
 import type { DeepUnPromisify } from '../Interact/types';
 
 /**
- * A Threadz-specific wrapper for the default `Worker` class from the Node.js `worker_threadz` module
+ * A Threadz-specific wrapper for the default `Worker` class from the Node.js `worker_threadz` module.
+ *
+ * @example
+ * instance.isRunning;
+ * instance.setPriority();
+ * instance.sendMessage();
+ * instance.waitFor();
+ * instance.justWaitFor();
+ * instance.ref();
+ * instance.unref();
+ * instance.terminate();
  */
 export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction> extends TypedEmitter<
     ThreadzWorkerEvents<DeepUnPromisify<ReturnType<T>>>

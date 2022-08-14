@@ -8,6 +8,15 @@ import type { MaxConcurrencyOptionsType, ThreadzWorkerPoolEvents } from './types
 
 /**
  * The API used by Threadz to manage all ThreadzWorker instances. Only one instance of the ThreadzWorkerPool is created.
+ *
+ * @example
+ * threadzPool.queueLength;
+ * threadzPool.maxedOut;
+ * threadzPool.currentlyActive;
+ * threadzPool.maxConcurrency;
+ * threadzPool.nextUp;
+ * threadzPool.dormant;
+ * threadzPool.setMaxConcurrency();
  */
 export class ThreadzWorkerPool extends TypedEmitter<ThreadzWorkerPoolEvents> {
     private active: number;

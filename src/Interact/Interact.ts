@@ -14,6 +14,21 @@ import type { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMe
 
 /**
  * Use this API to interact with a worker returned by ThreadzAPI by sending and receiving messages back and forth.
+ *
+ * @example
+ * Interact.with();
+ * instance.args();
+ * instance.isPriority();
+ * instance.isNotPriority();
+ * instance.setOptions();
+ * instance.setOptionsWithPrevious();
+ * instance.addMessagePort();
+ * instance.onMessage();
+ * instance.onFailure();
+ * instance.onSuccess();
+ * instance.onStart();
+ * instance.onAbort();
+ * instance.go();
  */
 export class Interact<T extends MappedWorkerFunction = MappedWorkerFunction> extends TypedEmitter<InteractEvents> {
     private priority: boolean;

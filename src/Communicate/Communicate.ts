@@ -7,6 +7,14 @@ import { ERROR_CONFIG } from './consts';
 import type { MessagePort } from 'worker_threads';
 import type { CommunicateEvents } from './types';
 
+/**
+ * Communicate between workers using this API.
+ *
+ * @example
+ * Communicate.between();
+ * Communicate.newMessageChannel();
+ * instance.closePorts();
+ */
 export class Communicate extends TypedEmitter<CommunicateEvents> {
     private messageChannel: MessageChannel;
     readonly port1: MessagePort;
