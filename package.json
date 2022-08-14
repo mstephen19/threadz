@@ -51,6 +51,7 @@
     },
     "dependencies": {
         "caller-callsite": "^4.1.0",
+        "callsites": "^3.1.0",
         "chalk": "^4.1.2",
         "tiny-typed-emitter": "^2.1.0"
     }
