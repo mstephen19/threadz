@@ -10,4 +10,4 @@ export type AcceptableObject = {
     [key: string | number | symbol]: unknown;
 } & { _sharedMemoryByteArray?: never };
 
-export type AcceptableDataType = AcceptableObject | string | number | unknown[] | boolean;
+export type AcceptableDataType = AcceptableObject | string | number | unknown[] | boolean | undefined | null;
