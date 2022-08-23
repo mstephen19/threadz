@@ -36,7 +36,7 @@ export const declare = <T extends Declarations>(declarations: T, { fileLocation 
         throw new MyError(ERROR_CONFIG('Each declaration must have a "worker" property which is a function.'));
     }
 
-    const location = fileLocation || !ThreadzWorkerPool.isESM ? caller().getFileName() : callsites()[1].getFileName();
+    const location = fileLocation || (!ThreadzWorkerPool.isESM ? caller().getFileName() : callsites()[1].getFileName());
 
     return new ThreadzAPI({ location, declarations });
 };
