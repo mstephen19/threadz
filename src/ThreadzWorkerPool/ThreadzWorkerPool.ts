@@ -1,10 +1,14 @@
 import { cpus } from 'os';
-import { MyError } from '../Errors';
-import { ERROR_CONFIG, MaxConcurrencyOptions } from './consts';
-import { ThreadzWorker } from '../ThreadzWorker';
 import { TypedEmitter } from 'tiny-typed-emitter';
+import path from 'path';
+import fs from 'fs';
 
-import type { MaxConcurrencyOptionsType, ThreadzWorkerPoolEvents } from './types';
+import { MyError } from '../Errors/index.js';
+import { ERROR_CONFIG, MaxConcurrencyOptions } from './consts.js';
+import { ThreadzWorker } from '../ThreadzWorker/index.js';
+
+import type { MaxConcurrencyOptionsType, ThreadzWorkerPoolEvents } from './types.js';
+import { ModuleType } from '../declare/consts.js';
 
 /**
  * The API used by Threadz to manage all ThreadzWorker instances. Only one instance of the ThreadzWorkerPool is created.
@@ -23,9 +27,16 @@ export class ThreadzWorkerPool extends TypedEmitter<ThreadzWorkerPoolEvents> {
     readonly cpus: number;
     private max: number;
     private queue: ThreadzWorker[];
+    readonly isESM: boolean = false;
 
     constructor() {
         super();
+
+        const packageJson = Buffer.from(fs.readFileSync(path.join(path.resolve(), 'package.json'))).toString('utf-8');
+        const parsed = JSON.parse(packageJson);
+
+        if (!('type' in parsed) || parsed.type === ModuleType.COMMONJS) this.isESM = false;
+        if (parsed.type === ModuleType.MODULE) this.isESM = true;
 
         this.active = 0;
         this.cpus = cpus().length;

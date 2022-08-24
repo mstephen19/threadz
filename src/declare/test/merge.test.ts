@@ -1,5 +1,5 @@
-import { declare } from '../declare';
-import { merge } from '../merge';
+import { declare } from '../declare.js';
+import { merge } from '../merge.js';
 
 describe('merge', () => {
     const decs1 = declare({

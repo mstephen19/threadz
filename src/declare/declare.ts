@@ -1,9 +1,12 @@
 import caller from 'caller-callsite';
-import { MyError } from '../Errors';
-import { ThreadzAPI } from '../ThreadzAPI';
-import { ERROR_CONFIG } from './consts';
+import callsites from 'callsites';
 
-import type { Declarations } from './types';
+import { MyError } from '../Errors/index.js';
+import { ThreadzAPI } from '../ThreadzAPI/index.js';
+import { ERROR_CONFIG, ModuleType } from './consts.js';
+import ThreadzWorkerPool from '../ThreadzWorkerPool/index.js';
+
+import type { Declarations } from './types.js';
 
 /**
  *
@@ -17,7 +20,7 @@ import type { Declarations } from './types';
  * @example export default declare({ add5: { worker: (x) => x + 5 } })
  *
  */
-export const declare = <T extends Declarations>(declarations: T) => {
+export const declare = <T extends Declarations>(declarations: T, { fileLocation }: { fileLocation?: string } = {}) => {
     // If declarations are undefined, an array, or not an object
     const isNotObject = !declarations || Array.isArray(declarations) || typeof declarations !== 'object';
 
@@ -33,7 +36,7 @@ export const declare = <T extends Declarations>(declarations: T) => {
         throw new MyError(ERROR_CONFIG('Each declaration must have a "worker" property which is a function.'));
     }
 
-    const location = caller().getFileName();
+    const location = fileLocation || (!ThreadzWorkerPool.isESM ? caller().getFileName() : callsites()[1].getFileName());
 
     return new ThreadzAPI({ location, declarations });
 };

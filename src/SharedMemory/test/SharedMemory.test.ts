@@ -1,5 +1,5 @@
-import { SharedMemory } from '../SharedMemory';
-import { SharedMemoryTransferObject } from '../types';
+import { SharedMemory } from '../SharedMemory.js';
+import { SharedMemoryTransferObject } from '../types.js';
 
 describe('SharedMemory', () => {
     describe('from', () => {

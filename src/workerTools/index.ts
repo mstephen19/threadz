@@ -1,8 +1,10 @@
 import { parentPort, isMainThread, threadId as threadIdValue, TransferListItem, workerData } from 'worker_threads';
-import { MyError } from '../Errors';
-import { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory';
-import type { WorkerData, WorkerMessagePayload } from '../worker/types';
-import { ERROR_CONFIG } from './consts';
+
+import { MyError } from '../Errors/index.js';
+import { ERROR_CONFIG } from './consts.js';
+
+import type { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory/index.js';
+import type { WorkerData, WorkerMessagePayload } from '../worker/types.js';
 
 /**
  * If you have passed a message port to the worker (using the Interact API), send messages to the port with this function.

@@ -1,12 +1,12 @@
-import SharedMemory from './SharedMemory';
-import { declare, merge } from './declare';
-import ThreadzWorkerPool from './ThreadzWorkerPool';
-import { Interact } from './Interact';
-import { workerTools } from './workerTools';
-import { MaxConcurrencyOptions } from './ThreadzWorkerPool/consts';
-import { Communicate } from './Communicate';
+import SharedMemory from './SharedMemory/index.js';
+import { declare, merge } from './declare/index.js';
+import ThreadzWorkerPool from './ThreadzWorkerPool/index.js';
+import { Interact } from './Interact/index.js';
+import { workerTools } from './workerTools/index.js';
+import { MaxConcurrencyOptions } from './ThreadzWorkerPool/consts.js';
+import { Communicate } from './Communicate/index.js';
 
-import type { SharedMemoryTransferObject } from './SharedMemory';
+import type { SharedMemoryTransferObject } from './SharedMemory/index.js';
 
 // APIs
 export { Interact, declare, merge, SharedMemory, Communicate, ThreadzWorkerPool as ThreadzPool, workerTools };

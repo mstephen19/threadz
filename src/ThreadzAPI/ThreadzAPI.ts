@@ -1,14 +1,26 @@
 import { TypedEmitter } from 'tiny-typed-emitter';
 import { isMainThread } from 'worker_threads';
-import { ThreadzWorker } from '../ThreadzWorker';
-import ThreadzWorkerPool from '../ThreadzWorkerPool';
-import { MyError } from '../Errors';
-import { ERROR_CONFIG } from './consts';
-import { Interact } from '../Interact';
 
-import type { Declarations, WorkerOptions } from '../declare/types';
-import type { ThreadzAPIConstructorOptions, ThreadzAPIEvents, MappedWorkers } from './types';
+import { ThreadzWorker } from '../ThreadzWorker/index.js';
+import ThreadzWorkerPool from '../ThreadzWorkerPool/index.js';
+import { MyError } from '../Errors/index.js';
+import { ERROR_CONFIG } from './consts.js';
+import { Interact } from '../Interact/index.js';
 
+import type { Declarations, WorkerOptions } from '../declare/types.js';
+import type { ThreadzAPIConstructorOptions, ThreadzAPIEvents, MappedWorkers } from './types.js';
+
+/**
+ * Access declared workers and data about them via this API returned from the `declare()` function.
+ *
+ * @example
+ * api.declarationCount;
+ * api.threadzPool;
+ * api.workers;
+ * api.location;
+ * api.declarations;
+ * api.interactWith();
+ */
 export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmitter<ThreadzAPIEvents> {
     /**
      * The location at which the declarations file lives.
@@ -92,7 +104,17 @@ export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmit
         return Interact.with(this.workers[name]);
     }
 
-    #queueWorker<A>({ name, args, options, priority }: { name: string; args: any[]; options: WorkerOptions; priority: boolean }): Promise<A> {
+    #queueWorker<A>({
+        name,
+        args,
+        options,
+        priority,
+    }: {
+        name: string;
+        args: any[];
+        options: WorkerOptions;
+        priority: boolean;
+    }): Promise<A> {
         return new Promise((resolve, reject) => {
             const worker = new ThreadzWorker({ priority, options, workerData: { name, args, location: this.location } });
 

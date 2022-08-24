@@ -1,3 +1,3 @@
-import { ThreadzWorker } from './ThreadzWorker';
+import { ThreadzWorker } from './ThreadzWorker.js';
 
 export { ThreadzWorker };

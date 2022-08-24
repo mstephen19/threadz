@@ -1,3 +1,3 @@
-import { ThreadzWorkerPool } from './ThreadzWorkerPool';
+import { ThreadzWorkerPool } from './ThreadzWorkerPool.js';
 
 export default new ThreadzWorkerPool();

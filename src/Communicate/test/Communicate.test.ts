@@ -1,5 +1,5 @@
 import { MessageChannel } from 'worker_threads';
-import { Communicate } from '../Communicate';
+import { Communicate } from '../Communicate.js';
 
 describe('Communicate', () => {
     describe('newMessageChannel', () => {

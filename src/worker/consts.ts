@@ -1,4 +1,4 @@
-import type { WorkerMessagePayload } from './types';
+import type { WorkerMessagePayload } from './types.js';
 
 export const SUCCESS_PAYLOAD = <T = unknown>(data: T): WorkerMessagePayload<T> => ({ done: true, success: true, data });
 

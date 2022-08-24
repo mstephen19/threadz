@@ -1,3 +1,3 @@
-import { ThreadzAPI } from './ThreadzAPI';
+import { ThreadzAPI } from './ThreadzAPI.js';
 
 export { ThreadzAPI };

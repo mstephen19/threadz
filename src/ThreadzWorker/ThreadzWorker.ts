@@ -1,15 +1,16 @@
 import { Worker, SHARE_ENV, TransferListItem } from 'worker_threads';
 import { TypedEmitter } from 'tiny-typed-emitter';
 import path from 'path';
-import { MyError } from '../Errors';
-import { ERROR_CONFIG } from './consts';
 
-import type { WorkerData, WorkerMessagePayload } from '../worker/types';
-import type { WorkerOptions } from '../declare/types';
-import type { ThreadzWorkerEvents } from './types';
-import type { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory';
-import type { MappedWorkerFunction } from '../ThreadzAPI/types';
-import type { DeepUnPromisify } from '../Interact/types';
+import { MyError } from '../Errors/index.js';
+import { ERROR_CONFIG } from './consts.js';
+
+import type { WorkerData, WorkerMessagePayload } from '../worker/types.js';
+import type { WorkerOptions } from '../declare/types.js';
+import type { ThreadzWorkerEvents } from './types.js';
+import type { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory/index.js';
+import type { MappedWorkerFunction } from '../ThreadzAPI/types.js';
+import type { DeepUnPromisify } from '../Interact/types.js';
 
 /**
  * A Threadz-specific wrapper for the default `Worker` class from the Node.js `worker_threadz` module.

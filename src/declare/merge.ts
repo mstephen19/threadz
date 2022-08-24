@@ -1,7 +1,7 @@
-import { MyError } from '../Errors';
-import { ThreadzAPI } from '../ThreadzAPI';
-import { ERROR_CONFIG } from './consts';
-import type { UnionToIntersection } from './types';
+import { MyError } from '../Errors/index.js';
+import { ThreadzAPI } from '../ThreadzAPI/index.js';
+import { ERROR_CONFIG } from './consts.js';
+import type { UnionToIntersection } from './types.js';
 
 type DeclarationType<T extends any> = T extends ThreadzAPI<infer D> ? D : never;
 type DeclarationsMap<T extends ThreadzAPI[]> = [...{ [K in keyof T]: DeclarationType<T[K]> }];

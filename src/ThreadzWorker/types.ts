@@ -1,4 +1,4 @@
-import { MyError } from '../Errors';
+import { MyError } from '../Errors/index.js';
 
 export interface ThreadzWorkerEvents<T = unknown, B = unknown> {
     error: (error: MyError) => void;

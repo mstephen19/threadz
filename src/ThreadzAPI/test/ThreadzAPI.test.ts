@@ -1,6 +1,6 @@
-import { ThreadzAPI } from '../ThreadzAPI';
-import { ThreadzWorkerPool } from '../../ThreadzWorkerPool/ThreadzWorkerPool';
-import { Interact } from '../../Interact';
+import { ThreadzAPI } from '../ThreadzAPI.js';
+import { ThreadzWorkerPool } from '../../ThreadzWorkerPool/ThreadzWorkerPool.js';
+import { Interact } from '../../Interact/index.js';
 
 import type { ModifiedMappedWorkerFunction } from '../types';
 

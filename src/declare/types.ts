@@ -1,5 +1,6 @@
 import type { ResourceLimits, TransferListItem } from 'worker_threads';
-import { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory';
+
+import { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory/index.js';
 
 type RawTypeOrPromise<T> = T | Promise<T>;
 

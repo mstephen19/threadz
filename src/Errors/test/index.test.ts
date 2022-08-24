@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { MyError } from '..';
+import { MyError } from '../index.js';
 
 describe('MyError', () => {
     const err = new MyError({ name: 'TestError', title: 'some error', message: 'oops!' });
