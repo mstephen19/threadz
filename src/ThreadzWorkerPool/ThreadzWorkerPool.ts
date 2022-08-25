@@ -9,6 +9,7 @@ import { ThreadzWorker } from '../ThreadzWorker/index.js';
 
 import type { MaxConcurrencyOptionsType, ThreadzWorkerPoolEvents } from './types.js';
 import { ModuleType } from '../declare/consts.js';
+import { traverseDirectoryUp } from '../utils.js';
 
 /**
  * The API used by Threadz to manage all ThreadzWorker instances. Only one instance of the ThreadzWorkerPool is created.
@@ -32,16 +33,20 @@ export class ThreadzWorkerPool extends TypedEmitter<ThreadzWorkerPoolEvents> {
     constructor() {
         super();
 
-        const packageJson = Buffer.from(fs.readFileSync(path.join(path.resolve(), 'package.json'))).toString('utf-8');
-        const parsed = JSON.parse(packageJson);
-
-        if (!('type' in parsed) || parsed.type === ModuleType.COMMONJS) this.isESM = false;
-        if (parsed.type === ModuleType.MODULE) this.isESM = true;
-
+        this.isESM = false;
         this.active = 0;
         this.cpus = cpus().length;
         this.max = this.cpus * 2;
         this.queue = [];
+
+        const pkgPath = traverseDirectoryUp(__dirname, 'package.json');
+        if (pkgPath) {
+            const packageJson = Buffer.from(fs.readFileSync(pkgPath)).toString('utf-8');
+            const parsed = JSON.parse(packageJson);
+            if (parsed.type === ModuleType.MODULE) {
+                this.isESM = true;
+            }
+        }
     }
 
     /**

@@ -16,10 +16,14 @@ export type MyErrorConfig = {
 };
 
 export class MyError extends Error {
-    constructor({ name, title, message }: MyErrorConfig) {
+    raw: any;
+
+    constructor(error: MyErrorConfig) {
+        const { name, title, message } = error;
         const colored = `${chalk.blueBright(`[${title}]`)} ${message}`;
         super(colored);
 
         this.name = chalk.red(name);
+        this.raw = error;
     }
 }
