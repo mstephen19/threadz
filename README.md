@@ -1,5 +1,7 @@
 # Threadz
 
+> Threadz now supports ESModules!
+
 ![npm](https://img.shields.io/npm/v/threadz) [![MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/mstephen19/threadz/blob/main/LICENSE) ![npm](https://img.shields.io/npm/dw/threadz)
 
 ![TypeScript](https://badgen.net/badge/-/TypeScript/blue?icon=typescript&label) [![CircleCI](https://circleci.com/gh/mstephen19/threadz.svg?style=svg)](https://app.circleci.com/pipelines/github/mstephen19/threadz) [![GitHub issues](https://img.shields.io/github/issues/mstephen19/threadz)](https://github.com/mstephen19/threadz/issues)
@@ -8,18 +10,10 @@
 
 A feature rich and scalable general-purpose multi-threading library that makes it easy to utilize all of a given machine's resources in Node.js.
 
-## New in v2.1.6
+## New in v2.2.0
 
-- [`waitForCommunication`](#waitforcommunication) entirely reworked.
-- Support for ESModules
-
-## New in v2.1.x
-
-- Small bug fixes (and a couple of big ones).
-- Better error handling for certain edge cases.
-- [Communicate API](#communicate-api) to send messages between workers.
-- [`merge`](#merge) function to merge declarations into one set.
-- Improved TypeScript support.
+- Support for both ESModules and CommonJS.
+- Minor bug fixes & edge case handling.
 
 ## Table of Contents
 
