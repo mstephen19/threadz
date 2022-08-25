@@ -2,3 +2,6 @@ src
 node_modules
 .github
 .circleci
+scripts
+jest.config.json
+CHANGELOG.md
