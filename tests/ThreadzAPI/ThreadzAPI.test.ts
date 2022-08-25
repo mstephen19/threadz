@@ -1,8 +1,8 @@
-import { ThreadzAPI } from '../ThreadzAPI.js';
-import { ThreadzWorkerPool } from '../../ThreadzWorkerPool/ThreadzWorkerPool.js';
-import { Interact } from '../../Interact/index.js';
+import { ThreadzAPI } from '../../src/ThreadzAPI/ThreadzAPI';
+import { ThreadzWorkerPool } from '../../src/ThreadzWorkerPool/ThreadzWorkerPool';
+import { Interact } from '../../src/Interact';
 
-import type { ModifiedMappedWorkerFunction } from '../types';
+import type { ModifiedMappedWorkerFunction } from '../../src/ThreadzAPI/types';
 
 describe('ThreadzAPI', () => {
     const location = __dirname;

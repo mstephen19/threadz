@@ -1,5 +1,5 @@
-import { declare } from '../../declare/index.js';
-import { Interact } from '../Interact.js';
+import { declare } from '../../src/declare/declare';
+import { Interact } from '../../src/Interact/Interact';
 
 describe('Interact', () => {
     const api = declare({

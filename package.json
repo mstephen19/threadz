@@ -12,7 +12,11 @@
     },
     "scripts": {
         "test": "jest",
-        "build": "rm -rf dist/* && tsc -p tsconfig-mjs.json && tsc -p tsconfig-cjs.json && ts-node scripts/fixup.ts && echo \"Build succeeded.\""
+        "coverage": "jest --coverage",
+        "fixup": "echo \"Fixing up build files.\" && ts-node scripts/fixup.ts",
+        "build:mjs": "echo \"Creating ESModules build.\" && tsc -p tsconfig-mjs.json",
+        "build:cjs": "echo \"Creating CommonJS build.\" && tsc -p tsconfig-cjs.json",
+        "build": "npm t && rm -rf dist/* && npm run build:mjs && npm run build:cjs && npm run fixup && echo \"Build succeeded.\""
     },
     "repository": {
         "type": "git",
@@ -33,7 +37,10 @@
         "function",
         "promise",
         "thread-puddle",
-        "piscina"
+        "piscina",
+        "shared memory",
+        "memory sharing",
+        "memory"
     ],
     "author": {
         "name": "Matt Stephens",

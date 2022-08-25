@@ -5,3 +5,5 @@ node_modules
 scripts
 jest.config.json
 CHANGELOG.md
+tests
+coverage
