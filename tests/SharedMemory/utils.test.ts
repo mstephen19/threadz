@@ -1,4 +1,4 @@
-import { getEncodedBytes, isSharedMemoryTransferObject, megabytesToBytes, removeZeros } from '../utils.js';
+import { getEncodedBytes, isSharedMemoryTransferObject, megabytesToBytes, removeZeros } from '../../src/SharedMemory/utils';
 
 describe('isSharedMemoryTransferObject', () => {
     it('Should return true if the object passes the condition.', () => {
