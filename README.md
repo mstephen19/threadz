@@ -10,7 +10,7 @@
 
 A feature rich and scalable general-purpose multi-threading library that makes it easy to utilize all of a given machine's resources in Node.js.
 
-## New in v2.2.0
+## New in v2.2.x
 
 - Support for both ESModules and CommonJS.
 - Minor bug fixes & edge case handling.
@@ -125,9 +125,7 @@ Declaration functions can also be asynchronous and return promises, which will b
 To get a full list of the configurations supported in the **options** property, refer to the [Node.js documentation](https://nodejs.org/api/worker_threads.html#new-workerfilename-options).
 
 > **Note:** Threadz will do its best to detect the path of the declaration file, but sometimes it might fail. In rare cases like these, you can manually pass a `fileLocation` string within the second parameter.
-
 > **Note:** The return value of the `declare()` function **MUST** be the default export of the file.
-
 > **Note:** Unfortunately, declaration functions cannot accept generic types.
 
 ## ThreadzAPI
