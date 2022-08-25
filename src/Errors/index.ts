@@ -16,7 +16,7 @@ export type MyErrorConfig = {
 };
 
 export class MyError extends Error {
-    raw: any;
+    raw: MyErrorConfig;
 
     constructor(error: MyErrorConfig) {
         const { name, title, message } = error;
