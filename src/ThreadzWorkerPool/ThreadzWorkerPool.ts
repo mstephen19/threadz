@@ -1,12 +1,10 @@
 import { cpus } from 'os';
 import { TypedEmitter } from 'tiny-typed-emitter';
-import path from 'path';
 import fs from 'fs';
 
 import { MyError } from '../Errors/index.js';
 import { ERROR_CONFIG, MaxConcurrencyOptions } from './consts.js';
 import { ThreadzWorker } from '../ThreadzWorker/index.js';
-
 import type { MaxConcurrencyOptionsType, ThreadzWorkerPoolEvents } from './types.js';
 import { ModuleType } from '../declare/consts.js';
 import { traverseDirectoryUp } from '../utils.js';

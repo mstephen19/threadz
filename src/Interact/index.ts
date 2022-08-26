@@ -1,3 +1,1 @@
-import { Interact } from './Interact.js';
-
-export { Interact };
+export { Interact } from './Interact.js';
