@@ -20,7 +20,7 @@ export class Communicate extends TypedEmitter<CommunicateEvents> {
     private messageChannel: MessageChannel;
     readonly port1: MessagePort;
     readonly port2: MessagePort;
-    protected totalWorkers: number;
+    readonly totalWorkers: number;
     protected finishedWorkers: number;
 
     private constructor(
