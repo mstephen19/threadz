@@ -4,7 +4,9 @@ import { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory/
 
 type RawTypeOrPromise<T> = T | Promise<T>;
 
-export type DeclarationFunction = { (...args: any[]): RawTypeOrPromise<AcceptableDataType | SharedMemoryTransferObject | void> };
+export type DeclarationFunction = {
+    (...args: any[]): RawTypeOrPromise<AcceptableDataType | SharedMemoryTransferObject | void>;
+};
 
 export type Declaration = {
     /**
