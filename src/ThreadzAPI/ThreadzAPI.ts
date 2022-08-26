@@ -57,7 +57,7 @@ export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmit
             run._name = name;
             run._location = this.location;
             run._options = declaration?.options || {};
-            run._priority = declaration?.priority || false;
+            run._priority = declaration?.priority ?? false;
 
             Object.freeze(run);
 
