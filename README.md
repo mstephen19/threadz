@@ -503,6 +503,10 @@ Send a message to be consumed back on the main thread.
 
 Pass a function to run any time a message is received from the parent thread. The data is passed in as the first parameter.
 
+#### `waitForParentMessage()`
+
+A function which takes in an assertion callback. The assertion callback takes in the received data and returns a boolean value. If the assertion returns `true`, the promise will resolve.
+
 #### `sendCommunication()`
 
 `(data: AcceptableDataType | SharedMemoryTransferObject, transferList?: TransferListItem[])` => `void`
