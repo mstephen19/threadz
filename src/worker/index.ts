@@ -52,8 +52,12 @@ const background = async () => {
             throw new Error('There is no worker by this name in the specified declarations file.');
         }
 
-        const payload = await api.declarations?.[name]?.worker(...args);
-        parentPort.postMessage({ name, id, payload } as BackgroundWorkerCallResponse);
+        try {
+            const payload = await api.declarations?.[name]?.worker(...args);
+            parentPort.postMessage({ name, id, payload } as BackgroundWorkerCallResponse);
+        } catch (error) {
+            parentPort.postMessage({ name, id, payload: null, error: (error as Error).message });
+        }
     });
 };
 

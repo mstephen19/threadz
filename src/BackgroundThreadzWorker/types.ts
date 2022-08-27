@@ -9,4 +9,5 @@ export type BackgroundWorkerCallResponse = {
     name: string;
     id: string;
     payload: unknown;
+    error?: string;
 };

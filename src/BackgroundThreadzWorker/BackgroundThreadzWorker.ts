@@ -20,10 +20,13 @@ export class BackgroundThreadzWorker<T extends ThreadzAPI> extends ThreadzWorker
 
         this.worker.postMessage({ name, id, args } as BackgroundWorkerCallPayload);
 
-        return new Promise((resolve) => {
-            const callback = ({ name: passedName, id: passedId, payload }: BackgroundWorkerCallResponse) => {
-                if (passedName === name && passedId === id)
-                    resolve(payload as Promise<DeepUnPromisify<ReturnType<T['declarations'][K]['worker']>>>);
+        return new Promise((resolve, reject) => {
+            const callback = ({ name: passedName, id: passedId, payload, error }: BackgroundWorkerCallResponse) => {
+                if (passedName !== name && passedId !== id) return;
+
+                if (error) reject(error);
+                if (!error) resolve(payload as Promise<DeepUnPromisify<ReturnType<T['declarations'][K]['worker']>>>);
+
                 this.worker.off('message', callback);
             };
 
