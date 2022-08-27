@@ -9,7 +9,7 @@ import { Interact } from '../Interact/index.js';
 
 import type { Declarations, WorkerOptions } from '../declare/types.js';
 import type { ThreadzAPIConstructorOptions, ThreadzAPIEvents, MappedWorkers } from './types.js';
-import { BackgroundThreadzWorker } from '../BackgroundThreadzWorker/BackgroundThreadzWorker.js';
+import { BackgroundThreadzWorker } from '../BackgroundThreadzWorker/index.js';
 
 /**
  * Access declared workers and data about them via this API returned from the `declare()` function.

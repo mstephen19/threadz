@@ -1,6 +1,7 @@
 import { v4 } from 'uuid';
 
 import { WorkerOptions } from '../declare/types.js';
+import { DeepUnPromisify } from '../Interact/types.js';
 import { ThreadzAPI } from '../ThreadzAPI/index.js';
 import { ThreadzWorker } from '../ThreadzWorker/index.js';
 import { BackgroundWorkerCallPayload, BackgroundWorkerCallResponse } from './types.js';
@@ -14,19 +15,20 @@ export class BackgroundThreadzWorker<T extends ThreadzAPI> extends ThreadzWorker
         this.go();
     }
 
-    async call<K extends keyof T['workers']>(name: K, args: Parameters<T['workers'][K]>) {
+    async call<K extends keyof T['declarations']>(name: K, args: Parameters<T['declarations'][K]['worker']>) {
         const id = v4();
 
         this.worker.postMessage({ name, id, args } as BackgroundWorkerCallPayload);
 
         return new Promise((resolve) => {
             const callback = ({ name: passedName, id: passedId, payload }: BackgroundWorkerCallResponse) => {
-                if (passedName === name && passedId === id) resolve(payload as Promise<ReturnType<T['workers'][K]>>);
+                if (passedName === name && passedId === id)
+                    resolve(payload as Promise<DeepUnPromisify<ReturnType<T['declarations'][K]['worker']>>>);
                 this.worker.off('message', callback);
             };
 
             this.worker.on('message', callback);
-        }) as Promise<ReturnType<T['workers'][K]>>;
+        }) as Promise<DeepUnPromisify<ReturnType<T['declarations'][K]['worker']>>>;
     }
 
     end() {
