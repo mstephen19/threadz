@@ -52,7 +52,7 @@ function onCommunication<T extends AcceptableDataType = AcceptableDataType>(call
  * Accepts a callback which takes in the received data and returns a boolean value. When the callback returns `true`, the promise resolves.
  *
  * @example
- * const data = await workerTools.waiForCommunication<string>((data) => data === 'hello world');
+ * const data = await workerTools.waitForCommunication<string>((data) => data === 'hello world');
  *
  * console.log(data);
  */
@@ -71,6 +71,24 @@ async function waitForCommunication<T extends AcceptableDataType = AcceptableDat
 
     return new Promise((resolve) => {
         port.on('message', async (data) => {
+            if (assertion(data)) resolve(data);
+        });
+    });
+}
+
+/**
+ * Accepts a callback which takes in the received data and returns a boolean value. When the callback returns `true`, the promise resolves.
+ *
+ * @example
+ * const data = await workerTools.waitForParentMessage<string>((data) => data === 'hello world');
+ *
+ * console.log(data);
+ */
+async function waitForParentMessage<T extends AcceptableDataType>(assertion: (data: T) => data is T): Promise<void>;
+async function waitForParentMessage<T extends SharedMemoryTransferObject>(assertion: (data: T) => data is T): Promise<void>;
+async function waitForParentMessage<T extends AcceptableDataType = AcceptableDataType>(assertion: (data: T) => data is T) {
+    return new Promise((resolve) => {
+        parentPort.on('message', async (data) => {
             if (assertion(data)) resolve(data);
         });
     });
@@ -186,6 +204,7 @@ const workerTools = {
     sendCommunication,
     onCommunication,
     waitForCommunication,
+    waitForParentMessage,
 };
 
 export { workerTools };
