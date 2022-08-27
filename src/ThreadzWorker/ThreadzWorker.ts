@@ -32,7 +32,7 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
     readonly workerData: WorkerData;
     priority: boolean;
     protected running: boolean;
-    private worker: Worker;
+    protected worker: Worker;
     protected completed: boolean;
 
     constructor({ priority, options, workerData }: { priority: boolean; options: WorkerOptions; workerData: WorkerData }) {
@@ -62,6 +62,8 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
 
         this.running = true;
         this.worker = worker;
+
+        if (this.workerData.type == 'BACKGROUND') return;
 
         worker.on('message', (payload: WorkerMessagePayload) => {
             const { done, success, error, messageData, data, aborted } = payload;

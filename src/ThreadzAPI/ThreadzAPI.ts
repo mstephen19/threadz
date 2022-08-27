@@ -9,6 +9,7 @@ import { Interact } from '../Interact/index.js';
 
 import type { Declarations, WorkerOptions } from '../declare/types.js';
 import type { ThreadzAPIConstructorOptions, ThreadzAPIEvents, MappedWorkers } from './types.js';
+import { BackgroundThreadzWorker } from '../BackgroundThreadzWorker/BackgroundThreadzWorker.js';
 
 /**
  * Access declared workers and data about them via this API returned from the `declare()` function.
@@ -104,6 +105,10 @@ export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmit
         return Interact.with(this.workers[name]);
     }
 
+    createBackgroundWorker({ options = {} }: { options?: WorkerOptions } = {}): BackgroundThreadzWorker<ThreadzAPI<T>> {
+        return new BackgroundThreadzWorker<ThreadzAPI<T>>({ options, location: this.location });
+    }
+
     #queueWorker<A>({
         name,
         args,
@@ -116,7 +121,7 @@ export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmit
         priority: boolean;
     }): Promise<A> {
         return new Promise((resolve, reject) => {
-            const worker = new ThreadzWorker({ priority, options, workerData: { name, args, location: this.location } });
+            const worker = new ThreadzWorker({ priority, options, workerData: { name, args, location: this.location, type: 'REGULAR' } });
 
             ThreadzWorkerPool.enqueue(worker);
 
