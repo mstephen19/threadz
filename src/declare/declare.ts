@@ -3,7 +3,7 @@ import callsites from 'callsites';
 
 import { MyError } from '../Errors/index.js';
 import { ThreadzAPI } from '../ThreadzAPI/index.js';
-import { ERROR_CONFIG, ModuleType } from './consts.js';
+import { ERROR_CONFIG } from './consts.js';
 import ThreadzWorkerPool from '../ThreadzWorkerPool/index.js';
 
 import type { Declarations } from './types.js';
