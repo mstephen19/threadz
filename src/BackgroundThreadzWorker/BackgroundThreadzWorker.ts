@@ -15,7 +15,7 @@ export class BackgroundThreadzWorker<T extends ThreadzAPI> extends ThreadzWorker
         this.go();
     }
 
-    async call<K extends keyof T['declarations']>(name: K, args: Parameters<T['declarations'][K]['worker']>) {
+    async call<K extends keyof T['declarations']>(name: K, ...args: Parameters<T['declarations'][K]['worker']>) {
         const id = v4();
 
         this.worker.postMessage({ name, id, args } as BackgroundWorkerCallPayload);
