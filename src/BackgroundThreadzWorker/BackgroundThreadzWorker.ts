@@ -12,7 +12,10 @@ export class BackgroundThreadzWorker<T extends ThreadzAPI> extends ThreadzWorker
     }
 
     start() {
-        this.go();
+        return new Promise((resolve) => {
+            this.on('started', () => resolve('started'));
+            this.go();
+        });
     }
 
     async call<K extends keyof T['declarations']>(name: K, ...args: Parameters<T['declarations'][K]['worker']>) {
