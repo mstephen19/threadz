@@ -21,6 +21,7 @@ import { BackgroundThreadzWorker } from '../BackgroundThreadzWorker/index.js';
  * api.location;
  * api.declarations;
  * api.interactWith();
+ * api.createBackgroundWorker();
  */
 export class ThreadzAPI<T extends Declarations = Declarations> extends TypedEmitter<ThreadzAPIEvents> {
     /**
