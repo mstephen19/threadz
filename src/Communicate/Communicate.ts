@@ -51,8 +51,8 @@ export class Communicate extends TypedEmitter<CommunicateEvents> {
         port1Workers.forEach(addPorts(port1));
         port2Workers.forEach(addPorts(port2));
 
-        port1.on('message', (data) => this.emit('message', data as unknown));
-        port2.on('message', (data) => this.emit('message', data as unknown));
+        port1.on('message', (data) => this.emit('message', { portNumber: 1, data }));
+        port2.on('message', (data) => this.emit('message', { portNumber: 2, data }));
 
         this.port1 = port1;
         this.port2 = port2;

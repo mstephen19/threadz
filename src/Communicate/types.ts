@@ -1,3 +1,3 @@
 export interface CommunicateEvents {
-    message: (data: unknown) => void;
+    message: (data: { portNumber: 1 | 2; data: unknown }) => void;
 }
