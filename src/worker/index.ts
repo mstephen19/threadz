@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { parentPort, workerData } from 'worker_threads';
 
 import { SUCCESS_PAYLOAD, ERROR_PAYLOAD } from './consts.js';
@@ -10,7 +11,12 @@ import { BackgroundWorkerCallPayload, BackgroundWorkerCallResponse } from '../Ba
 const getApi = async () => {
     const { location } = workerData as WorkerData;
 
+    if (!fs.existsSync(location)) {
+        throw new Error("It seems that the specified declarations file doesn't exist.");
+    }
+
     const imports = await import(location);
+
     const api = Object.values(imports).find(item => item instanceof ThreadzAPI) as ThreadzAPI<Declarations>;
 
     if (!api || !api?.declarations) {
