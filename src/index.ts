@@ -7,9 +7,10 @@ import { MaxConcurrencyOptions } from './ThreadzWorkerPool/consts.js';
 import { Communicate } from './Communicate/index.js';
 
 import type { SharedMemoryTransferObject } from './SharedMemory/index.js';
+import { ThreadzAPI } from './ThreadzAPI/index.js';
 
 // APIs
-export { Interact, declare, merge, SharedMemory, Communicate, ThreadzWorkerPool as ThreadzPool, workerTools };
+export { Interact, declare, merge, SharedMemory, Communicate, ThreadzWorkerPool as ThreadzPool, workerTools, ThreadzAPI };
 
 // Types & Enums
 export { MaxConcurrencyOptions, SharedMemoryTransferObject };
