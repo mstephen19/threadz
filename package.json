@@ -16,6 +16,7 @@
         "fixup": "echo \"Fixing up build files.\" && ts-node scripts/fixup.ts",
         "build:mjs": "echo \"Creating ESModules build.\" && tsc -p tsconfig-mjs.json",
         "build:cjs": "echo \"Creating CommonJS build.\" && tsc -p tsconfig-cjs.json",
+        "dev:cjs": "tsc -p tsconfig-cjs.json --watch",
         "build": "npm t && rm -rf dist/* && npm run build:mjs && npm run build:cjs && npm run fixup && echo \"Build succeeded.\""
     },
     "repository": {

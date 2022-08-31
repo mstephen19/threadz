@@ -90,6 +90,20 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
     }
 
     /**
+     * Get raw worker instance.
+     */
+    get raw() {
+        return this.worker;
+    }
+
+    /**
+     * Get current worker thread id.
+     */
+    get id() {
+        return this.worker.threadId;
+    }
+
+    /**
      *
      * @param priority A boolean or `0`/`1` defining what priority status the worker should have. Will have no effect if the worker is already running.
      *
