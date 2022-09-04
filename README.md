@@ -425,7 +425,54 @@ Normal `ThreadzWorker`s spin up a [`Worker`](https://nodejs.org/api/worker_threa
 
 ```TypeScript
 // declarations.ts
+import { declare, workerTools } from 'threadz';
 
+export default declare({
+    add: {
+        worker: (num1: number, num2: number) => num1 + num2,
+    },
+    subtract: {
+        worker: (num1: number, num2: number) => num1 - num2,
+    },
+});
+```
+
+```TypeScript
+// index.ts
+import api from './declarations.js';
+
+const backgroundWorker = api.createBackgroundWorker();
+
+// Spins up a single worker
+await backgroundWorker.start();
+
+const result = await backgroundWorker.call('add', 1, 2);
+
+// The "subtract" worker function is being run on the same thread
+// as the call for "add"
+const result2 = await backgroundWorker.call('subtract', 5, 3);
+
+// Ends the worker's process
+backgroundWorker.end();
+
+console.log(result, result2);
+```
+
+Though the output is the same, the functionality above is very different from this:
+
+```TypeScript
+// index.ts
+import api from './declarations.js';
+
+// Spins up a new Worker, runs the add function.
+// The worker's process is ended once the add function returns.
+const result = await api.workers.add(1, 2);
+
+// Spins up a new Worker, runs the subtract function.
+// The worker's process is ended once the subtract function returns.
+const result2 = await api.workers.subtract(5, 3);
+
+console.log(result, result2);
 ```
 
 ## ThreadzPool
