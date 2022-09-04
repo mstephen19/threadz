@@ -26,8 +26,8 @@ A feature rich and scalable general-purpose multi-threading library that makes i
 - [`declare`](#declare)
 - [ThreadzAPI](#threadzapi)
 - [`merge`](#merge)
-- [Interact API](#interact-api)
-- [Communicate API](#communicate-api)
+- [`Interact` API](#interact-api)
+- [`Communicate` API](#communicate-api)
 - [`ThreadzWorker`](#threadzworker)
 - [`BackgroundThreadzWorker`](#backgroundthreadzworker)
 - [ThreadzPool](#threadzpool)
@@ -216,7 +216,7 @@ import api from './declarations';
 
 > **Note:** if you are only using the `declare` function to create a ThreadzAPI instance with the sole intention of using it later in the `merge` function to be re-declared, it does not have to be the default export of the file it is in.
 
-## Interact API
+## `Interact` API
 
 Directly calling workers on `threadzAPI.workers` allows for the ability to pass arguments to a function, run it on a separate thread, then receive its return value back on the main thread. For any workflows more complex than this, the `Interact` API must be used.
 
@@ -320,7 +320,7 @@ Create the worker and queue it up in the ThreadzPool to be run. Returns a `Threa
   - Pass a function to run whenever the worker is aborted.
   - A worker can only be aborted with the [`workerTools.abort()`](#workertools) and `workerTools.abortOnTimeout()` functions.
 
-## Communicate API
+## `Communicate` API
 
 The `Communicate` class is a simple class that acts as a Threadz-specific wrapper for the [`MessageChannel` class](https://nodejs.org/api/worker_threads.html#class-messagechannel) from the `worker_threads` module in Node.js. Pass in [`Interact`](#interact-api) instances and automatically create a `MessageChannel` instance and add the ports to the `Interact` instances with `interact.addMessagePort()`
 
