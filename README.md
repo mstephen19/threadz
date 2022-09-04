@@ -76,11 +76,9 @@ export default declare({
 ```TypeScript
 import api from './declarations';
 
-(async () => {
-    // Run the for loop on a separate thread
-    const data = await api.workers.bigLoop(5);
-    console.log(data);
-})();
+// Run the for loop on a separate thread
+const data = await api.workers.bigLoop(5);
+console.log(data);
 
 console.log('this will run before the data is logged');
 ```
@@ -140,18 +138,16 @@ The `declare()` function returns an instance of `ThreadzAPI`, off of which your 
 // index.ts
 import api from './declarations';
 
-(async () => {
-    // Each of these operations is happening on a separate thread
-    await api.workers.logMessage('threadz is awesome');
-    await api.workers.helloWorld();
+// Each of these operations is happening on a separate thread
+await api.workers.logMessage('threadz is awesome');
+await api.workers.helloWorld();
 
-    // The return value of a worker function is a promise of
-    // the return value of the original declaration function
-    // it corresponds to.
-    const data = await api.workers.returnSum(4, 5)
+// The return value of a worker function is a promise of
+// the return value of the original declaration function
+// it corresponds to.
+const data = await api.workers.returnSum(4, 5)
 
-    console.log(data) // -> 9
-})()
+console.log(data) // -> 9
 ```
 
 ### Methods & properties
@@ -208,10 +204,8 @@ export default declare(merge([math, logging]));
 ```TypeScript
 import api from './declarations';
 
-(async () => {
-    await api.workers.add5(5);
-    await api.workers.helloWorld();
-})();
+await api.workers.add5(5);
+await api.workers.helloWorld();
 ```
 
 > **Note:** if you are only using the `declare` function to create a ThreadzAPI instance with the sole intention of using it later in the `merge` function to be re-declared, it does not have to be the default export of the file it is in.
@@ -226,24 +220,22 @@ Initialize an interaction session with the `Interact.with()` static method, pass
 import { Interact } from 'threadz';
 import api from './declarations';
 
-(async () => {
-    // Initialize the interact session, specifying which worker
-    // to run the interaction with.
-    const interact = Interact.with(api.workers.returnSum);
+// Initialize the interact session, specifying which worker
+// to run the interaction with.
+const interact = Interact.with(api.workers.returnSum);
 
-    // Pass in arguments to the worker and mark it as a priority.
-    interact.args(4, 5).isPriority();
+// Pass in arguments to the worker and mark it as a priority.
+interact.args(4, 5).isPriority();
 
-    // Run callbacks when certain worker events have occurred.
-    interact.onStart(() => console.log('Worker started'));
-    interact.onSuccess((result) => console.log(result));
+// Run callbacks when certain worker events have occurred.
+interact.onStart(() => console.log('Worker started'));
+interact.onSuccess((result) => console.log(result));
 
-    // Queue the worker into the ThreadzPool and run it.
-    const worker = interact.go();
+// Queue the worker into the ThreadzPool and run it.
+const worker = interact.go();
 
-    // Wait for the worker to finish running
-    await worker.waitFor();
-})();
+// Wait for the worker to finish running
+await worker.waitFor();
 ```
 
 ### Methods
@@ -288,15 +280,13 @@ Add a message port to the worker to be accessed by [`workerTools.sendCommunicati
 import { MessageChannel } from 'worker_threads';
 import api from './declarations';
 
-(async () => {
-    const { port1, port2 } = new MessageChannel();
+const { port1, port2 } = new MessageChannel();
 
-    const worker = api.interactWith('test').addMessagePort(port2).go();
+const worker = api.interactWith('test').addMessagePort(port2).go();
 
-    port1.on('message', (data) => console.log(data));
+port1.on('message', (data) => console.log(data));
 
-    await worker.waitFor();
-})();
+await worker.waitFor();
 ```
 
 #### `go()`
@@ -363,12 +353,10 @@ When a `ThreadzWorker` instance is returned by the [`Interact` API](#interact-ap
 import { Interact } from 'threadz';
 import api from './declarations';
 
-(async () => {
-    const interact = Interact.with(api.workers.returnSum).args(4, 5);
-    const worker = interact.go();
+const interact = Interact.with(api.workers.returnSum).args(4, 5);
+const worker = interact.go();
 
-    worker.sendMessage('foo');
-})();
+worker.sendMessage('foo');
 ```
 
 > **Note:** Other than with the `Interact` API, you should not be directly working with `ThreadzWorker` instances.
@@ -664,13 +652,11 @@ export default declare({
 import { SharedMemory } from 'threadz';
 import api from './declarations';
 
-(async () => {
-    const mem = SharedMemory.from('hey');
+const mem = SharedMemory.from('hey');
 
-    // The SharedMemory instance must be converted into a
-    // SharedMemoryTransferObject when passed into a worker
-    await api.workers.myWorker(mem.transfer());
-})();
+// The SharedMemory instance must be converted into a
+// SharedMemoryTransferObject when passed into a worker
+await api.workers.myWorker(mem.transfer());
 ```
 
 #### `get()`
