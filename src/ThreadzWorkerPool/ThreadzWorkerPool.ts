@@ -185,8 +185,6 @@ export class ThreadzWorkerPool extends TypedEmitter<ThreadzWorkerPoolEvents> {
         // Once the worker is finished, attempt to run the next worker in the queue.
         worker.on('success', handleWorkerCompletion);
         worker.on('error', handleWorkerCompletion);
-        worker.worker.on('exit', handleWorkerCompletion);
-        worker.worker.on('error', handleWorkerCompletion);
 
         // Run the worker
         worker.go();

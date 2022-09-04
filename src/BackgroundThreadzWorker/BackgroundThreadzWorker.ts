@@ -4,13 +4,14 @@ import { MessagePort } from 'worker_threads';
 import type { WorkerOptions } from '../declare/types.js';
 import { DeepUnPromisify } from '../Interact/types.js';
 import { ThreadzAPI } from '../ThreadzAPI/index.js';
+import { WorkerType } from '../ThreadzWorker/consts.js';
 import { ThreadzWorker } from '../ThreadzWorker/index.js';
 import ThreadzWorkerPool from '../ThreadzWorkerPool/index.js';
 import { BackgroundWorkerCallPayload, BackgroundWorkerCallResponse } from './types.js';
 
 export class BackgroundThreadzWorker<T extends ThreadzAPI> extends ThreadzWorker {
     constructor({ options = {}, location }: { options?: WorkerOptions; location: string }) {
-        super({ priority: true, options, workerData: { type: 'BACKGROUND', name: v4(), args: [], location } });
+        super({ priority: true, options, workerData: { type: WorkerType.BACKGROUND, name: v4(), args: [], location } });
     }
 
     /**
@@ -24,6 +25,10 @@ export class BackgroundThreadzWorker<T extends ThreadzAPI> extends ThreadzWorker
             this.workerData.port = port;
             this.options.transferList = [...(this.options?.transferList || []), port];
         }
+
+        this.on('error', (err) => {
+            throw err;
+        });
 
         return new Promise((resolve) => {
             this.on('started', () => resolve('started'));

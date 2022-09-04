@@ -3,7 +3,7 @@ import { TypedEmitter } from 'tiny-typed-emitter';
 import path from 'path';
 
 import { MyError } from '../Errors/index.js';
-import { ERROR_CONFIG } from './consts.js';
+import { ERROR_CONFIG, WorkerType } from './consts.js';
 
 import type { WorkerData, WorkerMessagePayload } from '../worker/types.js';
 import type { WorkerOptions } from '../declare/types.js';
@@ -64,18 +64,22 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
         this.running = true;
         this.worker = worker;
 
-        if (this.workerData.type == 'BACKGROUND') return;
-
         worker.on('message', (payload: WorkerMessagePayload) => {
             const { done, success, error, messageData, data, aborted } = payload;
 
-            if (messageData) return this.emit('message', messageData);
+            if (messageData) {
+                if (this.workerData.type === WorkerType.REGULAR) return this.emit('message', messageData);
+            }
 
-            if (done && success) this.emit('success', data as DeepUnPromisify<ReturnType<T>>);
+            if (done && success) {
+                if (this.workerData.type === WorkerType.REGULAR) this.emit('success', data as DeepUnPromisify<ReturnType<T>>);
+            }
 
             if (done && aborted) this.emit('aborted', data as string);
-
             if (done && error) this.emit('error', new MyError(ERROR_CONFIG(`Failed within worker: ${error}`)));
+
+            // If it's a background worker, don't terminate.
+            if (this.workerData.type === WorkerType.BACKGROUND) return;
 
             this.running = false;
             this.completed = true;

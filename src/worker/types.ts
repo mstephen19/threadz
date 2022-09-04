@@ -1,11 +1,12 @@
 import { MessagePort } from 'worker_threads';
+import { WorkerType } from '../ThreadzWorker/consts.js';
 
 export type WorkerData = {
     name: string;
     location: string;
     args: unknown[];
     port?: MessagePort;
-    type: 'BACKGROUND' | 'REGULAR';
+    type: WorkerType;
 };
 
 export type WorkerMessagePayload<T = unknown> = {
