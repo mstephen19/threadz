@@ -56,9 +56,9 @@ function onCommunication<T extends AcceptableDataType = AcceptableDataType>(call
  *
  * console.log(data);
  */
-async function waitForCommunication<T extends AcceptableDataType>(assertion: (data: T) => data is T): Promise<void>;
-async function waitForCommunication<T extends SharedMemoryTransferObject>(assertion: (data: T) => data is T): Promise<void>;
-async function waitForCommunication<T extends AcceptableDataType = AcceptableDataType>(assertion: (data: T) => data is T) {
+async function waitForCommunication<T extends AcceptableDataType>(assertion: (data: T) => boolean): Promise<void>;
+async function waitForCommunication<T extends SharedMemoryTransferObject>(assertion: (data: T) => boolean): Promise<void>;
+async function waitForCommunication<T extends AcceptableDataType = AcceptableDataType>(assertion: (data: T) => boolean) {
     const { port } = workerData as WorkerData;
 
     if (!port) {
@@ -84,9 +84,9 @@ async function waitForCommunication<T extends AcceptableDataType = AcceptableDat
  *
  * console.log(data);
  */
-async function waitForParentMessage<T extends AcceptableDataType>(assertion: (data: T) => data is T): Promise<void>;
-async function waitForParentMessage<T extends SharedMemoryTransferObject>(assertion: (data: T) => data is T): Promise<void>;
-async function waitForParentMessage<T extends AcceptableDataType = AcceptableDataType>(assertion: (data: T) => data is T) {
+async function waitForParentMessage<T extends AcceptableDataType>(assertion: (data: T) => boolean): Promise<void>;
+async function waitForParentMessage<T extends SharedMemoryTransferObject>(assertion: (data: T) => boolean): Promise<void>;
+async function waitForParentMessage<T extends AcceptableDataType = AcceptableDataType>(assertion: (data: T) => boolean) {
     return new Promise((resolve) => {
         parentPort.on('message', async (data) => {
             if (assertion(data)) resolve(data);
