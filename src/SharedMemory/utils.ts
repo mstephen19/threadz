@@ -5,7 +5,7 @@ import { AcceptableDataType, SharedMemoryTransferObject } from './types.js';
  * Checks if the item passed in is a SharedMemoryTransferObject.
  */
 export const isSharedMemoryTransferObject = (item: any): item is SharedMemoryTransferObject => {
-    return item?._sharedMemoryByteArray && item._sharedMemoryByteArray instanceof Uint8Array;
+    return !!item?._sharedMemoryByteArray && item._sharedMemoryByteArray instanceof Uint8Array;
 };
 
 /**
@@ -34,7 +34,13 @@ export const getEncodedBytes = (item: AcceptableDataType) => {
 export const encodeBytes = (item: AcceptableDataType, array: Uint8Array) => {
     const encoded = getEncodedBytes(item);
 
-    encoded.forEach((num, i) => Atomics.store(array, i, num));
+    encoded.forEach((num, i) => {
+        // If the new previous array's value at this index already equals
+        // the newly encoded value, don't do anything.
+        if (array.at(i) === num) return;
+
+        Atomics.store(array, i, num);
+    });
 };
 
 /**
@@ -46,9 +52,7 @@ export const decodeBytes = <T extends AcceptableDataType>(array: Uint8Array): T 
     if (set[0] === 0 && set.length === 1) return 'empty' as T;
 
     const decoded = new TextDecoder().decode(array);
-
     const parsed = JSON.parse(decoded.trim().replace(/\0/g, ''));
-
     return parsed;
 };
 
