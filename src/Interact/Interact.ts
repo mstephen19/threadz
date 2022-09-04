@@ -50,7 +50,9 @@ export class Interact<T extends MappedWorkerFunction = MappedWorkerFunction> ext
             name: _name,
             args: [],
             location: _location,
+            type: 'REGULAR',
         };
+
         this.options = _options;
         this.priority = _priority;
 

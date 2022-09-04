@@ -4,7 +4,8 @@ export type WorkerData = {
     name: string;
     location: string;
     args: unknown[];
-    port?: MessagePort
+    port?: MessagePort;
+    type: 'BACKGROUND' | 'REGULAR';
 };
 
 export type WorkerMessagePayload<T = unknown> = {

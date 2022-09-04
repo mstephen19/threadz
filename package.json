@@ -1,6 +1,6 @@
 {
     "name": "threadz",
-    "version": "2.2.1",
+    "version": "2.2.4",
     "description": "A high-level abstraction for multi-threading and sharing memory in Node.js.",
     "main": "dist/cjs/index.js",
     "module": "dist/mjs/index.js",
@@ -16,6 +16,7 @@
         "fixup": "echo \"Fixing up build files.\" && ts-node scripts/fixup.ts",
         "build:mjs": "echo \"Creating ESModules build.\" && tsc -p tsconfig-mjs.json",
         "build:cjs": "echo \"Creating CommonJS build.\" && tsc -p tsconfig-cjs.json",
+        "dev:cjs": "tsc -p tsconfig-cjs.json --watch",
         "build": "npm t && rm -rf dist/* && npm run build:mjs && npm run build:cjs && npm run fixup && echo \"Build succeeded.\""
     },
     "repository": {
@@ -51,6 +52,7 @@
         "@types/callsite": "^1.0.31",
         "@types/jest": "^28.1.1",
         "@types/node": "^17.0.35",
+        "@types/uuid": "^8.3.4",
         "jest": "^28.1.1",
         "ts-jest": "^28.0.4",
         "ts-node": "^10.9.1",
@@ -60,6 +62,7 @@
         "caller-callsite": "^4.1.0",
         "callsites": "^3.1.0",
         "chalk": "^4.1.2",
-        "tiny-typed-emitter": "^2.1.0"
+        "tiny-typed-emitter": "^2.1.0",
+        "uuid": "^8.3.2"
     }
 }

@@ -1,12 +1,13 @@
 import { TypedEmitter } from 'tiny-typed-emitter';
-import { MessageChannel } from 'worker_threads';
+import { MessageChannel, TransferListItem } from 'worker_threads';
 
 import { MyError } from '../Errors/index.js';
 import { Interact } from '../Interact/index.js';
 import { ERROR_CONFIG } from './consts.js';
 
-import type { MessagePort } from 'worker_threads';
+import { MessagePort } from 'worker_threads';
 import type { CommunicateEvents } from './types.js';
+import { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory/types.js';
 
 /**
  * Communicate between workers using this API.
@@ -15,6 +16,7 @@ import type { CommunicateEvents } from './types.js';
  * Communicate.between();
  * Communicate.newMessageChannel();
  * instance.closePorts();
+ * instance.sendCommunication();
  */
 export class Communicate extends TypedEmitter<CommunicateEvents> {
     private messageChannel: MessageChannel;
@@ -51,8 +53,8 @@ export class Communicate extends TypedEmitter<CommunicateEvents> {
         port1Workers.forEach(addPorts(port1));
         port2Workers.forEach(addPorts(port2));
 
-        port1.on('message', (data) => this.emit('message', data as unknown));
-        port2.on('message', (data) => this.emit('message', data as unknown));
+        port1.on('message', (data) => this.emit('message', { portNumber: 1, data }));
+        port2.on('message', (data) => this.emit('message', { portNumber: 2, data }));
 
         this.port1 = port1;
         this.port2 = port2;
@@ -140,6 +142,17 @@ export class Communicate extends TypedEmitter<CommunicateEvents> {
      */
     static newMessageChannel() {
         return new MessageChannel();
+    }
+
+    sendCommunication<T extends AcceptableDataType>(
+        port: 1 | 2 | MessagePort,
+        data: T | SharedMemoryTransferObject,
+        transferList: TransferListItem[] = []
+    ) {
+        const chosenPort = port instanceof MessagePort ? port : port === 1 ? this.port1 : port === 2 ? this.port2 : null;
+        if (!chosenPort) throw new Error('The first argument of sendCommunication must either be a MessagePort, 1, or 2!');
+
+        chosenPort.postMessage(data, transferList);
     }
 
     /**

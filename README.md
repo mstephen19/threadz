@@ -12,6 +12,9 @@ A feature rich and scalable general-purpose multi-threading library that makes i
 
 ## New in v2.2.x
 
+- New [`BackgroundThreadzWorker`](#backgroundthreadzworker) API.
+- Various bug fixes.
+- Minor improvements to the [`SharedMemory`](#sharedmemory) API.
 - Support for both ESModules and CommonJS.
 - Minor bug fixes & edge case handling.
 
@@ -23,9 +26,10 @@ A feature rich and scalable general-purpose multi-threading library that makes i
 - [`declare`](#declare)
 - [ThreadzAPI](#threadzapi)
 - [`merge`](#merge)
-- [Interact API](#interact-api)
-- [Communicate API](#communicate-api)
+- [`Interact` API](#interact-api)
+- [`Communicate` API](#communicate-api)
 - [`ThreadzWorker`](#threadzworker)
+- [`BackgroundThreadzWorker`](#backgroundthreadzworker)
 - [ThreadzPool](#threadzpool)
 - [workerTools](#workertools)
 - [`SharedMemory`](#sharedmemory)
@@ -165,6 +169,7 @@ import api from './declarations';
   - The global `ThreadzWorkerPool` instance being used to manage all workers.
 - **`interactWith()`**: _`(workerName: string)` => [`Interact`](#interact-api)_
   - Pass in the name of a worker on the `ThreadzAPI` instance to create an interaction session for that worker with the `Interact` API.
+- **`createBackgroundWorker()`**: _`()` => [`BackgroundThreadzWorker`](#backgroundthreadzworker)_
 - **`on()`**: `(callback: Function)` => `void`
   - Supports the `workerQueued` and `workerDone` methods.
 
@@ -211,7 +216,7 @@ import api from './declarations';
 
 > **Note:** if you are only using the `declare` function to create a ThreadzAPI instance with the sole intention of using it later in the `merge` function to be re-declared, it does not have to be the default export of the file it is in.
 
-## Interact API
+## `Interact` API
 
 Directly calling workers on `threadzAPI.workers` allows for the ability to pass arguments to a function, run it on a separate thread, then receive its return value back on the main thread. For any workflows more complex than this, the `Interact` API must be used.
 
@@ -315,7 +320,7 @@ Create the worker and queue it up in the ThreadzPool to be run. Returns a `Threa
   - Pass a function to run whenever the worker is aborted.
   - A worker can only be aborted with the [`workerTools.abort()`](#workertools) and `workerTools.abortOnTimeout()` functions.
 
-## Communicate API
+## `Communicate` API
 
 The `Communicate` class is a simple class that acts as a Threadz-specific wrapper for the [`MessageChannel` class](https://nodejs.org/api/worker_threads.html#class-messagechannel) from the `worker_threads` module in Node.js. Pass in [`Interact`](#interact-api) instances and automatically create a `MessageChannel` instance and add the ports to the `Interact` instances with `interact.addMessagePort()`
 
@@ -411,6 +416,64 @@ Supports the `message`, `error`, `aborted`, `success`, and `started` events.
 #### `ref()`, `unref()`, and `terminate()`
 
 Refer to the [Node.js documentation](https://nodejs.org/api/worker_threads.html#workerunref) for more details.
+
+## `BackgroundThreadzWorker`
+
+This class cannot be directly interacted with, but can be instantiated via the [`createBackgroundWorker`](#threadzapi) function on a `ThreadzAPI` instance. Background workers work differently from regular workers, as they begin running when you call the `start()` function, and only finish when you call `end()`.
+
+Normal `ThreadzWorker`s spin up a [`Worker`](https://nodejs.org/api/worker_threads.html#class-worker) for a single function call, then finish once the function has returned (or resolved with) some value. `BackgroundThreadzWorker`s allow you to spin up only one worker, then have access to calling any of your declared worker functions without needing to spin up a new `Worker` each time.
+
+```TypeScript
+// declarations.ts
+import { declare, workerTools } from 'threadz';
+
+export default declare({
+    add: {
+        worker: (num1: number, num2: number) => num1 + num2,
+    },
+    subtract: {
+        worker: (num1: number, num2: number) => num1 - num2,
+    },
+});
+```
+
+```TypeScript
+// index.ts
+import api from './declarations.js';
+
+const backgroundWorker = api.createBackgroundWorker();
+
+// Spins up a single worker
+await backgroundWorker.start();
+
+const result = await backgroundWorker.call('add', 1, 2);
+
+// The "subtract" worker function is being run on the same thread
+// as the call for "add"
+const result2 = await backgroundWorker.call('subtract', 5, 3);
+
+// Ends the worker's process
+backgroundWorker.end();
+
+console.log(result, result2);
+```
+
+Though the output is the same, the functionality above is very different from this:
+
+```TypeScript
+// index.ts
+import api from './declarations.js';
+
+// Spins up a new Worker, runs the add function.
+// The worker's process is ended once the add function returns.
+const result = await api.workers.add(1, 2);
+
+// Spins up a new Worker, runs the subtract function.
+// The worker's process is ended once the subtract function returns.
+const result2 = await api.workers.subtract(5, 3);
+
+console.log(result, result2);
+```
 
 ## ThreadzPool
 
