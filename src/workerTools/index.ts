@@ -29,6 +29,8 @@ const sendCommunication = <T extends AcceptableDataType>(data: T | SharedMemoryT
 /**
  * If you have passed a message port to the worker (using the Interact API), listen for messages on the port with this function.
  *
+ * @returns A function which will stop listening on the parent port when called.
+ *
  * @example
  * workerTools.onCommunication<string>((message) => console.log(`received: ${message}`));
  */
@@ -46,6 +48,10 @@ function onCommunication<T extends AcceptableDataType = AcceptableDataType>(call
     }
 
     port.on('message', callback);
+
+    return () => {
+        port.off('message', callback);
+    };
 }
 
 /**
@@ -70,8 +76,9 @@ async function waitForCommunication<T extends AcceptableDataType = AcceptableDat
     }
 
     return new Promise((resolve) => {
-        port.on('message', async (data) => {
+        port.on('message', function callback(data) {
             if (assertion(data)) resolve(data);
+            port.off('message', callback);
         });
     });
 }
@@ -88,8 +95,9 @@ async function waitForParentMessage<T extends AcceptableDataType>(assertion: (da
 async function waitForParentMessage<T extends SharedMemoryTransferObject>(assertion: (data: T) => boolean): Promise<void>;
 async function waitForParentMessage<T extends AcceptableDataType = AcceptableDataType>(assertion: (data: T) => boolean) {
     return new Promise((resolve) => {
-        parentPort.on('message', async (data) => {
+        parentPort.on('message', function callback(data) {
             if (assertion(data)) resolve(data);
+            parentPort.off('message', callback);
         });
     });
 }
@@ -117,6 +125,8 @@ const sendMessageToParent = <T extends AcceptableDataType>(data: T | SharedMemor
  *
  * @param callback Function to run any time a message is received from the parent thread.
  *
+ * @returns A function which will stop listening on the parent port when called.
+ *
  * @example
  * workerTools.onParentMessage((data) => console.log(data))
  */
@@ -128,6 +138,10 @@ function onParentMessage<T extends AcceptableDataType = AcceptableDataType>(call
     }
 
     parentPort.on('message', callback);
+
+    return () => {
+        parentPort.off('message', callback);
+    };
 }
 
 /**
