@@ -12,6 +12,7 @@ import type { MappedWorkerFunction, ModifiedMappedWorkerFunction } from '../Thre
 import type { ThreadzWorkerEvents } from '../ThreadzWorker/types.js';
 import type { DeepUnPromisify, InteractEvents } from './types.js';
 import type { AcceptableDataType, SharedMemoryTransferObject } from '../SharedMemory/index.js';
+import { WorkerType } from '../ThreadzWorker/consts.js';
 
 /**
  * Use this API to interact with a worker returned by ThreadzAPI by sending and receiving messages back and forth.
@@ -50,7 +51,7 @@ export class Interact<T extends MappedWorkerFunction = MappedWorkerFunction> ext
             name: _name,
             args: [],
             location: _location,
-            type: 'REGULAR',
+            type: WorkerType.REGULAR,
         };
 
         this.options = _options;

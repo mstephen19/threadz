@@ -1,4 +1,3 @@
-import fs from 'node:fs';
 import { parentPort, workerData } from 'worker_threads';
 
 import { SUCCESS_PAYLOAD, ERROR_PAYLOAD } from './consts.js';
@@ -21,12 +20,13 @@ const getApi = async () => {
         const api = Object.values(imports).find((item) => item instanceof ThreadzAPI) as ThreadzAPI<Declarations>;
 
         if (!api || !api?.declarations) {
-            throw new Error("Make sure you've correctly exported your declarations in a separate file.");
+            throw new Error("It seems that the specified declarations don't exist.");
         }
 
         return api;
     } catch (error) {
-        throw new Error("It seems that the specified declarations file doesn't exist.");
+        parentPort.postMessage(ERROR_PAYLOAD((error as Error)?.message));
+        process.exit(1);
     }
 };
 
@@ -53,10 +53,13 @@ const background = async () => {
     const api = await getApi();
 
     parentPort.on('message', async ({ name, id, args, terminate }: BackgroundWorkerCallPayload) => {
-        if (terminate) process.exit();
+        if (terminate) {
+            parentPort.postMessage(SUCCESS_PAYLOAD('success'));
+            process.exit(0);
+        }
 
-        if (!api.declarations?.[name]) {
-            throw new Error('There is no worker by this name in the specified declarations file.');
+        if (!api?.declarations?.[name]) {
+            parentPort.postMessage({ name, id, payload: null, error: `A declaration function with the name ${name} doesn't exist.` });
         }
 
         try {
