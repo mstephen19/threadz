@@ -34,9 +34,11 @@ const sendCommunication = <T extends AcceptableDataType>(data: T | SharedMemoryT
  * @example
  * workerTools.onCommunication<string>((message) => console.log(`received: ${message}`));
  */
-function onCommunication<T extends AcceptableDataType>(callback: (data: T) => void): void;
-function onCommunication<T extends SharedMemoryTransferObject>(callback: (data: T) => void): void;
-function onCommunication<T extends AcceptableDataType = AcceptableDataType>(callback: (data: T | SharedMemoryTransferObject) => void) {
+function onCommunication<T extends AcceptableDataType>(callback: (data: T) => void): () => void;
+function onCommunication<T extends SharedMemoryTransferObject>(callback: (data: T) => void): () => void;
+function onCommunication<T extends AcceptableDataType = AcceptableDataType>(
+    callback: (data: T | SharedMemoryTransferObject) => void
+): () => void {
     const { port } = workerData as WorkerData;
 
     if (!port) {
@@ -130,9 +132,11 @@ const sendMessageToParent = <T extends AcceptableDataType>(data: T | SharedMemor
  * @example
  * workerTools.onParentMessage((data) => console.log(data))
  */
-function onParentMessage<T extends AcceptableDataType>(callback: (data: T) => void): void;
-function onParentMessage<T extends SharedMemoryTransferObject>(callback: (data: T) => void): void;
-function onParentMessage<T extends AcceptableDataType = AcceptableDataType>(callback: (data: T | SharedMemoryTransferObject) => void) {
+function onParentMessage<T extends AcceptableDataType>(callback: (data: T) => void): () => void;
+function onParentMessage<T extends SharedMemoryTransferObject>(callback: (data: T) => void): () => void;
+function onParentMessage<T extends AcceptableDataType = AcceptableDataType>(
+    callback: (data: T | SharedMemoryTransferObject) => void
+): () => void {
     if (isMainThread) {
         throw new MyError(ERROR_CONFIG('Attempting to use a workerTool on the main thread. Not allowed.'));
     }

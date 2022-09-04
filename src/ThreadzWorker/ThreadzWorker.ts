@@ -32,7 +32,7 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
     readonly workerData: WorkerData;
     priority: boolean;
     protected running: boolean;
-    protected worker: Worker;
+    worker: Worker;
     protected completed: boolean;
 
     constructor({ priority, options, workerData }: { priority: boolean; options: WorkerOptions; workerData: WorkerData }) {
@@ -52,13 +52,14 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
      */
     go() {
         if (this.running) return;
-        this.emit('started');
 
         const worker = new Worker(path.join(__dirname, '../worker/index.js'), {
             ...this.options,
             workerData: this.workerData,
             env: SHARE_ENV,
         });
+
+        this.emit('started');
 
         this.running = true;
         this.worker = worker;

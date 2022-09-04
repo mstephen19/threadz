@@ -8,13 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- Ability to export `ThreadzAPI` not just as default
-- `BackgroundThreadzWorker` class
-- `createBackgroundWorker()` function to `ThreadzAPI`
+- Ability to export `ThreadzAPI` not just as default.
+- `BackgroundThreadzWorker` class.
+- `createBackgroundWorker()` function to `ThreadzAPI`.
 
 ### Changed
 
 - `worker.ts` file to support both background workers and regular workers.
+- `SharedMemory` API `set` methods to only update changed bytes.
 
 ## [2.2.1] - 2022/25/08
 

@@ -12,6 +12,9 @@ A feature rich and scalable general-purpose multi-threading library that makes i
 
 ## New in v2.2.x
 
+- New [`BackgroundThreadzWorker`](#backgroundthreadzworker) API.
+- Various bug fixes.
+- Minor improvements to the [`SharedMemory`](#sharedmemory) API.
 - Support for both ESModules and CommonJS.
 - Minor bug fixes & edge case handling.
 
@@ -26,6 +29,7 @@ A feature rich and scalable general-purpose multi-threading library that makes i
 - [Interact API](#interact-api)
 - [Communicate API](#communicate-api)
 - [`ThreadzWorker`](#threadzworker)
+- [`BackgroundThreadzWorker`](#backgroundthreadzworker)
 - [ThreadzPool](#threadzpool)
 - [workerTools](#workertools)
 - [`SharedMemory`](#sharedmemory)
@@ -165,6 +169,7 @@ import api from './declarations';
   - The global `ThreadzWorkerPool` instance being used to manage all workers.
 - **`interactWith()`**: _`(workerName: string)` => [`Interact`](#interact-api)_
   - Pass in the name of a worker on the `ThreadzAPI` instance to create an interaction session for that worker with the `Interact` API.
+- **`createBackgroundWorker()`**: _`()` => [`BackgroundThreadzWorker`](#backgroundthreadzworker)_
 - **`on()`**: `(callback: Function)` => `void`
   - Supports the `workerQueued` and `workerDone` methods.
 
@@ -411,6 +416,17 @@ Supports the `message`, `error`, `aborted`, `success`, and `started` events.
 #### `ref()`, `unref()`, and `terminate()`
 
 Refer to the [Node.js documentation](https://nodejs.org/api/worker_threads.html#workerunref) for more details.
+
+## `BackgroundThreadzWorker`
+
+This class cannot be directly interacted with, but can be instantiated via the [`createBackgroundWorker`](#threadzapi) function on a `ThreadzAPI` instance. Background workers work differently from regular workers, as they begin running when you call the `start()` function, and only finish when you call `end()`.
+
+Normal `ThreadzWorker`s spin up a [`Worker`](https://nodejs.org/api/worker_threads.html#class-worker) for a single function call, then finish once the function has returned (or resolved with) some value. `BackgroundThreadzWorker`s allow you to spin up only one worker, then have access to calling any of your declared worker functions without needing to spin up a new `Worker` each time.
+
+```TypeScript
+// declarations.ts
+
+```
 
 ## ThreadzPool
 
