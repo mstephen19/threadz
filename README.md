@@ -165,7 +165,7 @@ console.log(data) // -> 9
   - The global `ThreadzWorkerPool` instance being used to manage all workers.
 - **`interactWith()`**: _`(workerName: string)` => [`Interact`](#interact-api)_
   - Pass in the name of a worker on the `ThreadzAPI` instance to create an interaction session for that worker with the `Interact` API.
-- **`createBackgroundWorker()`**: _`()` => [`BackgroundThreadzWorker`](#backgroundthreadzworker)_
+- **`createBackgroundWorker()`**: _`({ options?: WorkerOptions })` => [`BackgroundThreadzWorker`](#backgroundthreadzworker)_
 - **`on()`**: `(callback: Function)` => `void`
   - Supports the `workerQueued` and `workerDone` methods.
 
@@ -463,6 +463,28 @@ const result2 = await api.workers.subtract(5, 3);
 console.log(result, result2);
 ```
 
+### Methods & properties
+
+#### `start()`
+
+`(port?: MessagePort)` => `Promise<void>`
+
+Starts the background worker. You can optionally pass a `MessagePort` object to enable the usage of methods such as [`workerTools.onCommunication`](#workertools) within the worker.
+
+#### `call()`
+
+`(name: string, ...args: unknown[])` => `Promise<unknown>`
+
+Calls the declaration function, applying the arguments passed to it. Returns a promise of the declaration function's return type.
+
+#### `end()`
+
+`()` => `void`
+
+Ends the worker's process.
+
+#### ``
+
 ## ThreadzPool
 
 The `ThreadzWorkerPool` (importable under the name `ThreadzPool`) is a single global object which implements a queuing system to manage workers and maintain a maximum concurrency.
@@ -552,7 +574,11 @@ Send a message to be consumed back on the main thread.
 
 #### `onParentMessage()`
 
+`(callback: Function)` => `Function`
+
 Pass a function to run any time a message is received from the parent thread. The data is passed in as the first parameter.
+
+Returns a function that stops listening on the parent port when called.
 
 #### `waitForParentMessage()`
 
@@ -566,7 +592,11 @@ If you have passed a message port to the worker (using the [`Interact` API](#int
 
 #### `onCommunication()`
 
+`(callback: Function)` => `Function`
+
 If you have passed a message port to the worker (using the Interact API), listen for messages on the port with this function by passing a callback which takes in the received data.
+
+Returns a function that stops listening on the port when called.
 
 #### `waitForCommunication()`
 
