@@ -22,7 +22,7 @@ export class BackgroundThreadzWorker<T extends ThreadzAPI> extends ThreadzWorker
     start(port?: MessagePort) {
         if (port && port instanceof MessagePort) {
             this.workerData.port = port;
-            this.options.transferList.push(port);
+            this.options.transferList = [...(this.options?.transferList || []), port];
         }
 
         return new Promise((resolve) => {

@@ -9,21 +9,25 @@ import type { Declarations } from '../declare/types.js';
 import { BackgroundWorkerCallPayload, BackgroundWorkerCallResponse } from '../BackgroundThreadzWorker/types.js';
 
 const getApi = async () => {
-    const { location } = workerData as WorkerData;
+    try {
+        const { location } = workerData as WorkerData;
 
-    if (!fs.existsSync(location)) {
+        // if (!fs.existsSync(location)) {
+        //     throw new Error("It seems that the specified declarations file doesn't exist.");
+        // }
+
+        const imports = await import(location);
+
+        const api = Object.values(imports).find((item) => item instanceof ThreadzAPI) as ThreadzAPI<Declarations>;
+
+        if (!api || !api?.declarations) {
+            throw new Error("Make sure you've correctly exported your declarations in a separate file.");
+        }
+
+        return api;
+    } catch (error) {
         throw new Error("It seems that the specified declarations file doesn't exist.");
     }
-
-    const imports = await import(location);
-
-    const api = Object.values(imports).find(item => item instanceof ThreadzAPI) as ThreadzAPI<Declarations>;
-
-    if (!api || !api?.declarations) {
-        throw new Error("Make sure you've correctly exported your declaration in a separate file.");
-    }
-
-    return api;
 };
 
 const regular = async () => {
