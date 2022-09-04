@@ -1,9 +1,11 @@
 import { v4 } from 'uuid';
+import { MessagePort } from 'worker_threads';
 
-import { WorkerOptions } from '../declare/types.js';
+import type { WorkerOptions } from '../declare/types.js';
 import { DeepUnPromisify } from '../Interact/types.js';
 import { ThreadzAPI } from '../ThreadzAPI/index.js';
 import { ThreadzWorker } from '../ThreadzWorker/index.js';
+import ThreadzWorkerPool from '../ThreadzWorkerPool/index.js';
 import { BackgroundWorkerCallPayload, BackgroundWorkerCallResponse } from './types.js';
 
 export class BackgroundThreadzWorker<T extends ThreadzAPI> extends ThreadzWorker {
@@ -11,14 +13,32 @@ export class BackgroundThreadzWorker<T extends ThreadzAPI> extends ThreadzWorker
         super({ priority: true, options, workerData: { type: 'BACKGROUND', name: v4(), args: [], location } });
     }
 
-    start() {
+    /**
+     * Queue the background worker into `ThreadzPool` and wait for its `started` event to fire.
+     *
+     * You can optionally pass in a `MessagePort` object to enable the usage of the `Communicate` API
+     * for communicating between threads.
+     */
+    start(port?: MessagePort) {
+        if (port && port instanceof MessagePort) {
+            this.workerData.port = port;
+            this.options.transferList.push(port);
+        }
+
         return new Promise((resolve) => {
             this.on('started', () => resolve('started'));
-            this.go();
+            ThreadzWorkerPool.enqueue(this);
         });
     }
 
+    /**
+     *
+     * @param name The name of the declaration function to call within the worker
+     * @param args The arguments for the function.
+     */
     async call<K extends keyof T['declarations']>(name: K, ...args: Parameters<T['declarations'][K]['worker']>) {
+        if (!this.running) throw new Error(`Can't use the call() function on a non-running background worker!`);
+
         const id = v4();
 
         this.worker.postMessage({ name, id, args } as BackgroundWorkerCallPayload);
@@ -37,9 +57,15 @@ export class BackgroundThreadzWorker<T extends ThreadzAPI> extends ThreadzWorker
         }) as Promise<DeepUnPromisify<ReturnType<T['declarations'][K]['worker']>>>;
     }
 
+    /**
+     * Stop the worker.
+     */
     end() {
         this.worker.postMessage({ terminate: true } as BackgroundWorkerCallPayload);
         this.worker.terminate();
+
+        // We need to do this to ensure ThreadzWorkerPool
+        this.emit('success');
 
         this.running = false;
         this.completed = true;
