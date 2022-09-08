@@ -38,6 +38,7 @@ export class ThreadzWorkerPool extends TypedEmitter<ThreadzWorkerPoolEvents> {
         this.queue = [];
 
         const pkgPath = traverseDirectoryUp(__dirname, 'package.json');
+
         if (pkgPath) {
             const packageJson = Buffer.from(fs.readFileSync(pkgPath)).toString('utf-8');
             const parsed = JSON.parse(packageJson);

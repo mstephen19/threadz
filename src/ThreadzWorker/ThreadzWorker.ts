@@ -102,10 +102,20 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
     }
 
     /**
-     * Get current worker thread id.
+     * Get current worker thread ID.
      */
     get id() {
         return this.worker?.threadId;
+    }
+
+    /**
+     * Wait for the worker to start. Useful when using the Interact API to ensure the worker has started before sending any messages to the worker.
+     */
+    waitForStart() {
+        return new Promise((resolve) => {
+            if (this.running || this.completed) resolve(true);
+            this.on('started', () => resolve(true));
+        });
     }
 
     /**
