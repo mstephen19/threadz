@@ -10,13 +10,14 @@
 
 A feature rich and scalable general-purpose multi-threading library that makes it easy to utilize all of a given machine's resources in Node.js.
 
-## New in v2.2.x
+## New in v2.3.x
 
 - New [`BackgroundThreadzWorker`](#backgroundthreadzworker) API.
 - Various bug fixes.
 - Minor improvements to the [`SharedMemory`](#sharedmemory) API.
 - Support for both ESModules and CommonJS.
 - Minor bug fixes & edge case handling.
+- [`waitForStart`](#waitforstart) method on `ThreadzWorker`.
 
 ## Table of Contents
 
@@ -380,6 +381,12 @@ Send a message to the worker while it is running by passing in a basic data type
 `(priority: boolean | 0 | 1)` => `void`
 
 Sets the priority of the worker based on a boolean or number value. Has no effect if the worker is already running.
+
+#### `waitForStart()`
+
+`()` => `Promise<void>`
+
+Allows you to wait for the worker to start before trying to interact with it while it's running.
 
 #### `waitFor()`
 

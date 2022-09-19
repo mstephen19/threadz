@@ -95,7 +95,7 @@ export class ThreadzWorker<T extends MappedWorkerFunction = MappedWorkerFunction
     }
 
     /**
-     * Get raw worker instance.
+     * Get the raw worker instance.
      */
     get raw() {
         return this.worker;
