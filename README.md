@@ -1,5 +1,9 @@
 # Threadz
 
+## !!! THIS PACKAGE HAS BEEN DEPRECATED
+
+Threadz will no longer be maintained. Please use [Nanolith](https://github.com/mstephen19/nanolith) instead for multi-threading in Node.js. It is stable and maintained regularly.
+
 > Threadz now supports ESModules!
 
 ![npm](https://img.shields.io/npm/v/threadz) [![MIT](https://img.shields.io/badge/license-MIT-blue)](https://github.com/mstephen19/threadz/blob/main/LICENSE) ![npm](https://img.shields.io/npm/dw/threadz)
